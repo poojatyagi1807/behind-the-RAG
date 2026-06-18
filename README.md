@@ -59,16 +59,11 @@ No prior ML knowledge required. The app explains every concept in plain English.
 
 ---
 
-## Getting started
+## Try it live
 
-### Deploy on Streamlit Cloud (recommended)
+🚀 **[Launch the app](https://behind-the-rag.streamlit.app)**
 
-1. Go to [share.streamlit.io](https://share.streamlit.io) and sign in with GitHub
-2. Click **New app**
-3. Select this repo → branch `main` → main file `app.py`
-4. Click **Deploy**
-
-Once live, add your API key in the sidebar under **Settings** to enable the online pipeline steps. A free key from [Google AI Studio](https://aistudio.google.com) (Gemini) is the easiest option — no credit card required.
+Add your API key in the sidebar under **Settings** to enable the online pipeline steps. A free key from [Google AI Studio](https://aistudio.google.com) (Gemini) is the easiest option — no credit card required.
 
 Optional: a free [Cohere](https://cohere.com) key enables live re-ranking in Step 10.
 
