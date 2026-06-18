@@ -1,0 +1,89 @@
+TITLE: Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks
+SOURCE: arXiv:2005.11401
+AUTHORS: Patrick Lewis, Ethan Perez, Aleksandra Piktus, Fabio Petroni, Vladimir Karpukhin, Naman Goyal, Heinrich Küttler, Mike Lewis, Wen-tau Yih, Tim Rocktäschel, Sebastian Riedel, Douwe Kiela
+PUBLISHED: May 22, 2020 (NeurIPS 2020)
+TYPE: Research paper
+
+ABSTRACT
+
+Large pre-trained language models have been shown to store factual knowledge in their parameters, and achieve state-of-the-art results when fine-tuned on downstream NLP tasks. However, their ability to access and precisely manipulate knowledge is still limited, and hence on knowledge-intensive tasks, their performance lags behind task-specific architectures. Additionally, providing provenance for their decisions and updating their world knowledge remain open research problems.
+
+Pre-trained models with a differentiable access mechanism to explicit non-parametric memory can overcome this issue, but have so far been only investigated for extractive downstream tasks. We explore a general-purpose fine-tuning recipe for retrieval-augmented generation (RAG) -- models which combine pre-trained parametric and non-parametric memory for language generation.
+
+We introduce RAG models where the parametric memory is a pre-trained seq2seq model and the non-parametric memory is a dense vector index of Wikipedia, accessed with a pre-trained neural retriever. We compare two RAG formulations, one which conditions on the same retrieved passages across the whole generated sequence, the other can use different passages per token.
+
+We fine-tune and evaluate our models on a wide range of knowledge-intensive NLP tasks and set the state-of-the-art on three open domain QA tasks, outperforming parametric seq2seq models and task-specific retrieve-and-extract architectures. For language generation tasks, we find that RAG models generate more specific, diverse and factual language than a state-of-the-art parametric-only seq2seq baseline.
+
+SECTION 1: INTRODUCTION
+
+The core motivation for RAG is that large language models, while impressive, have fundamental limitations when it comes to knowledge-intensive tasks. They store knowledge implicitly in their billions of parameters — knowledge that is static, potentially outdated, and difficult to update without expensive retraining. This parametric knowledge approach also makes it hard to provide provenance or citations for generated content.
+
+RAG addresses these limitations by combining two types of memory:
+
+Parametric memory: The pre-trained language model, which stores general knowledge and language understanding in its parameters. This is what the model "knows" from training.
+
+Non-parametric memory: An external dense vector index — in the original paper, Wikipedia — that can be queried at inference time to retrieve relevant passages. This memory is dynamic: it can be updated by changing the indexed documents without retraining the model.
+
+The retrieval mechanism uses a dense passage retriever (DPR) based on BERT. Given a query, DPR encodes both the query and all passages into dense vector representations, then finds the k most relevant passages using Maximum Inner Product Search (MIPS) over the index.
+
+SECTION 2: MODELS
+
+RAG-Sequence Model: Uses the same retrieved document for the entire generated sequence. The model treats the retrieved document as additional context and generates the complete answer conditioned on both the input and the retrieved passage.
+
+RAG-Token Model: Can use different retrieved documents for each generated token. At each generation step, the model can attend to different retrieved passages, allowing it to draw from multiple sources within a single generated answer.
+
+Both models are fine-tuned end-to-end: the generator parameters are updated, but the retriever index is kept fixed during training.
+
+SECTION 3: KNOWLEDGE-INTENSIVE TASKS
+
+Open Domain Question Answering: Tasks where the model must answer questions using information not provided in the input. Examples include Natural Questions, TriviaQA, and WebQuestions. RAG achieves state-of-the-art on three of these benchmarks.
+
+Abstractive Question Answering: Requires generating abstractive answers rather than extracting spans. RAG significantly outperforms parametric-only baselines.
+
+Jeopardy Question Generation: Given an answer entity, generate a Jeopardy-style question. RAG generates more factual and specific questions.
+
+Fact Verification: Given a claim and a label, verify whether the claim is supported. FEVER dataset. RAG demonstrates strong performance by retrieving relevant evidence.
+
+SECTION 4: RESULTS
+
+On open domain QA benchmarks, RAG outperforms both parametric seq2seq models (T5) and retrieve-then-read models. The key advantage is that RAG can generate fluent, abstractive answers while still grounding them in retrieved evidence.
+
+For factual language generation tasks, RAG generates more specific, diverse and factual language. Human evaluation confirms that RAG outputs are more factual and contain fewer hallucinations compared to parametric-only models.
+
+A critical finding: providing the model access to 100 retrieved documents dramatically improves performance on knowledge-intensive tasks, demonstrating that non-parametric memory is essential for tasks requiring precise factual recall.
+
+SECTION 5: ANALYSIS
+
+Retrievability vs Memorization: The paper analyzes when retrieval helps most. For rare or time-sensitive facts, retrieval is essential. For common knowledge well-represented in training data, parametric memory is often sufficient.
+
+Index Ablations: Experiments show that the quality and size of the retrieval corpus matters significantly. Using Wikipedia as the retrieval corpus provides comprehensive factual coverage.
+
+Retriever Analysis: The DPR retriever shows strong recall — the relevant passage is found in the top-5 retrieved documents over 70% of the time for most QA benchmarks.
+
+SECTION 6: WHY RAG PREVENTS HALLUCINATION
+
+The key mechanism by which RAG reduces hallucination is factual grounding. When the model generates each token, it conditions on retrieved passages that contain factual information relevant to the query. The non-parametric memory acts as a constraint on generation — the model is encouraged to produce content consistent with the retrieved evidence rather than relying solely on potentially imprecise parametric knowledge.
+
+This grounding mechanism is particularly effective for:
+- Facts about specific entities (people, places, dates)
+- Recent events not well-represented in training data
+- Domain-specific knowledge requiring precision
+- Facts that could be misremembered or confabulated by the parametric model
+
+The combination of parametric and non-parametric memory allows RAG to leverage the language understanding and generation capabilities of the pre-trained model while grounding factual claims in retrievable evidence.
+
+SECTION 7: LIMITATIONS AND FUTURE WORK
+
+Despite strong results, RAG has several limitations:
+
+Retrieval bottleneck: If the retriever fails to find the relevant passage, the generator cannot compensate. The quality of the retrieval index is critical.
+
+Long-tail knowledge: Very rare or niche facts may not be well-represented in the retrieval corpus.
+
+Multi-hop reasoning: Tasks requiring synthesis across multiple documents are challenging for current RAG formulations.
+
+Latency: Retrieval adds inference-time latency compared to purely parametric models.
+
+The paper identifies several directions for future work: improving the retriever for harder multi-hop tasks, exploring retrieval-augmented approaches for other modalities, and developing methods to update the retrieval corpus more efficiently.
+
+CITATION: Lewis et al. (2020). Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks. Advances in Neural Information Processing Systems 33 (NeurIPS 2020).

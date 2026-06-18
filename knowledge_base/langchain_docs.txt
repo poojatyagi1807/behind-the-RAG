@@ -1,0 +1,265 @@
+TITLE: Build a Retrieval Augmented Generation (RAG) App
+SOURCE: python.langchain.com/docs/tutorials/rag/
+TYPE: Technical documentation with code examples
+
+INTRODUCTION
+
+One of the most powerful applications enabled by LLMs is sophisticated question-answering (Q&A) chatbots. These applications use a technique known as Retrieval Augmented Generation, or RAG.
+
+A typical RAG application has two main components:
+
+Indexing: a pipeline for ingesting data from a source and indexing it. This usually happens offline.
+
+Retrieval and generation: the actual RAG chain, which takes the user query at run time and retrieves the relevant data from the index, then passes that to the model.
+
+The most common full sequence from raw data to answer:
+
+1. Load: First we need to load our data. This is done with Document Loaders.
+2. Split: Text splitters break large Documents into smaller chunks. This is useful both for indexing data and passing it in to a model, since large chunks are harder to search over and won't fit in a model's finite context window.
+3. Store: We need somewhere to store and index our splits, so that they can later be searched over. This is often done using a VectorStore and Embeddings model.
+4. Retrieve: Given a user input, relevant splits are retrieved from storage using a Retriever.
+5. Generate: A ChatModel or LLM produces an answer using a prompt that includes both the question with the retrieved data.
+
+SECTION 1: DOCUMENT LOADING
+
+LangChain provides many document loaders for different sources. The WebBaseLoader is commonly used for loading web content.
+
+```python
+import bs4
+from langchain_community.document_loaders import WebBaseLoader
+
+# Load, chunk and index the contents of the blog.
+loader = WebBaseLoader(
+    web_paths=("https://lilianweng.github.io/posts/2023-06-23-agent/",),
+    bs_kwargs=dict(
+        parse_only=bs4.SoupStrainer(
+            class_=("post-content", "post-title", "post-header")
+        )
+    ),
+)
+docs = loader.load()
+```
+
+The loader returns a list of Document objects, each containing page_content (the text) and metadata (source URL, title, etc.).
+
+SECTION 2: TEXT SPLITTING
+
+Large documents need to be split into smaller chunks for effective retrieval. The RecursiveCharacterTextSplitter is the most commonly used splitter.
+
+```python
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+text_splitter = RecursiveCharacterTextSplitter(
+    chunk_size=1000, 
+    chunk_overlap=200
+)
+all_splits = text_splitter.split_documents(docs)
+```
+
+chunk_size: The maximum number of characters in each chunk.
+chunk_overlap: The number of characters that overlap between consecutive chunks. Overlap helps preserve context across chunk boundaries.
+
+The RecursiveCharacterTextSplitter tries to split text at natural boundaries: first at double newlines (paragraphs), then single newlines, then spaces, and finally individual characters. This hierarchy of separators means chunks are more likely to contain complete sentences and paragraphs.
+
+SECTION 3: VECTOR STORE AND EMBEDDINGS
+
+After splitting, we embed the chunks and store them in a vector store.
+
+```python
+from langchain_chroma import Chroma
+from langchain_openai import OpenAIEmbeddings
+
+vectorstore = Chroma.from_documents(
+    documents=all_splits, 
+    embedding=OpenAIEmbeddings()
+)
+```
+
+The embedding model converts each text chunk into a vector representation. Semantically similar chunks will have similar vector representations, enabling semantic search.
+
+Popular vector stores include:
+- Chroma: Open-source, good for local development
+- Pinecone: Managed cloud service, good for production
+- Weaviate: Open-source with rich filtering capabilities
+- pgvector: PostgreSQL extension for teams already using Postgres
+
+SECTION 4: RETRIEVAL
+
+The retriever is responsible for finding relevant chunks given a user query.
+
+```python
+retriever = vectorstore.as_retriever(
+    search_type="similarity",
+    search_kwargs={"k": 6}
+)
+```
+
+search_type: Can be "similarity" (cosine similarity), "mmr" (Maximum Marginal Relevance, which balances relevance with diversity), or "similarity_score_threshold".
+
+k: The number of documents to retrieve. More documents provide more context but consume more tokens.
+
+MMR is particularly useful when you want to avoid retrieving multiple chunks that say essentially the same thing. It selects documents that are relevant to the query while being diverse among themselves.
+
+SECTION 5: GENERATION WITH RAG CHAIN
+
+Combine retrieval with generation using LCEL (LangChain Expression Language).
+
+```python
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_openai import ChatOpenAI
+
+llm = ChatOpenAI(model="gpt-4o-mini")
+
+system_prompt = (
+    "You are an assistant for question-answering tasks. "
+    "Use the following pieces of retrieved context to answer "
+    "the question. If you don't know the answer, say that you "
+    "don't know. Use three sentences maximum and keep the "
+    "answer concise."
+    "\n\n"
+    "{context}"
+)
+
+prompt = ChatPromptTemplate.from_messages(
+    [
+        ("system", system_prompt),
+        ("human", "{input}"),
+    ]
+)
+```
+
+The system prompt is critical. Key instructions:
+- Tell the model to use the retrieved context
+- Instruct it to say "I don't know" when the context doesn't contain the answer
+- Specify format and length constraints
+
+```python
+from langchain.chains import create_retrieval_chain
+from langchain.chains.combine_documents import create_stuff_documents_chain
+
+question_answer_chain = create_stuff_documents_chain(llm, prompt)
+rag_chain = create_retrieval_chain(retriever, question_answer_chain)
+
+results = rag_chain.invoke({"input": "What is Task Decomposition?"})
+```
+
+SECTION 6: STREAMING
+
+For better user experience, stream the response as it's generated.
+
+```python
+for chunk in rag_chain.stream({"input": "What is Task Decomposition?"}):
+    print(chunk, end="", flush=True)
+```
+
+Streaming sends tokens to the client as they're generated rather than waiting for the complete response. This significantly improves perceived latency for end users.
+
+SECTION 7: ADDING CHAT HISTORY (CONVERSATIONAL RAG)
+
+For multi-turn conversations, we need to handle chat history.
+
+```python
+from langchain.chains import create_history_aware_retriever
+from langchain_core.prompts import MessagesPlaceholder
+
+contextualize_q_system_prompt = (
+    "Given a chat history and the latest user question "
+    "which might reference context in the chat history, "
+    "formulate a standalone question which can be understood "
+    "without the chat history. Do NOT answer the question, "
+    "just reformulate it if needed and otherwise return it as is."
+)
+
+contextualize_q_prompt = ChatPromptTemplate.from_messages(
+    [
+        ("system", contextualize_q_system_prompt),
+        MessagesPlaceholder("chat_history"),
+        ("human", "{input}"),
+    ]
+)
+
+history_aware_retriever = create_history_aware_retriever(
+    llm, retriever, contextualize_q_prompt
+)
+```
+
+The history-aware retriever reformulates the user's question in the context of the conversation history before retrieval. This is essential for follow-up questions that reference previous turns.
+
+For example, if a user asks "What is it?" after asking about RAG, the reformulated question would be "What is RAG?" — a standalone question that can be retrieved against without needing the conversation context.
+
+SECTION 8: EVALUATION WITH LANGSMITH
+
+LangSmith provides observability for LangChain applications.
+
+```python
+import os
+os.environ["LANGSMITH_TRACING"] = "true"
+os.environ["LANGSMITH_API_KEY"] = "..."
+```
+
+With LangSmith enabled, every chain invocation is traced and logged. You can inspect:
+- Which documents were retrieved and their relevance scores
+- The exact prompt sent to the LLM
+- The LLM's response
+- End-to-end latency and token usage
+
+This observability is invaluable for debugging retrieval failures and improving pipeline quality.
+
+SECTION 9: CHUNKING STRATEGY CONSIDERATIONS
+
+Chunk size has a significant impact on retrieval quality. Key considerations:
+
+Too small: Individual chunks may lack sufficient context to be useful. A single sentence rarely contains enough information to answer a question.
+
+Too large: Large chunks are harder to search precisely, and they consume more of the LLM's context window, leaving less room for multiple relevant chunks.
+
+Overlap: The chunk_overlap parameter ensures that information at chunk boundaries is captured in both adjacent chunks. Without overlap, you risk losing context that spans chunk boundaries.
+
+For most RAG applications, chunk sizes between 500-1000 tokens with 10-20% overlap work well as a starting point. However, the optimal size depends on your specific documents and query patterns.
+
+SECTION 10: ADVANCED RETRIEVAL TECHNIQUES
+
+Multi-query retrieval: Generate multiple variations of the user's question and retrieve documents for each variation. This helps overcome limitations of keyword-based thinking.
+
+```python
+from langchain.retrievers.multi_query import MultiQueryRetriever
+
+retriever_from_llm = MultiQueryRetriever.from_llm(
+    retriever=vectorstore.as_retriever(), 
+    llm=llm
+)
+```
+
+Contextual compression: Compress retrieved documents to include only the most relevant portions before sending to the LLM.
+
+```python
+from langchain.retrievers import ContextualCompressionRetriever
+from langchain.retrievers.document_compressors import LLMChainExtractor
+
+compressor = LLMChainExtractor.from_llm(llm)
+compression_retriever = ContextualCompressionRetriever(
+    base_compressor=compressor, 
+    base_retriever=retriever
+)
+```
+
+Ensemble retrieval: Combine multiple retrievers using Reciprocal Rank Fusion (RRF).
+
+```python
+from langchain.retrievers import EnsembleRetriever
+from langchain_community.retrievers import BM25Retriever
+
+bm25_retriever = BM25Retriever.from_documents(all_splits)
+bm25_retriever.k = 2
+
+faiss_retriever = vectorstore.as_retriever(search_kwargs={"k": 2})
+
+ensemble_retriever = EnsembleRetriever(
+    retrievers=[bm25_retriever, faiss_retriever], 
+    weights=[0.5, 0.5]
+)
+```
+
+This hybrid approach combines the precision of dense semantic search with the recall of sparse keyword search (BM25), often outperforming either approach alone.
+
+SOURCE ATTRIBUTION: LangChain documentation (python.langchain.com). Apache 2.0 license. Used for educational purposes.

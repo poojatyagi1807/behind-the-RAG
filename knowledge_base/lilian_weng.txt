@@ -1,0 +1,149 @@
+TITLE: LLM Powered Autonomous Agents
+SOURCE: lilianweng.github.io/posts/2023-06-23-agent/
+AUTHOR: Lilian Weng
+DATE: June 23, 2023
+TYPE: Long-form technical blog post
+
+AGENT SYSTEM OVERVIEW
+
+Building agents with LLM (large language model) as its core controller is a cool concept. Several proof-of-concepts demos, such as AutoGPT, GPT-Engineer and BabyAGI, serve as inspiring examples. The potentiality of LLM extends beyond generating well-written copies, stories, essays and programs; it can be framed as a powerful general problem solver.
+
+In a LLM-powered autonomous agent system, LLM functions as the agent's brain, complemented by several key components:
+
+Planning
+- Subgoal and decomposition: The agent breaks down large tasks into smaller, manageable subgoals, enabling efficient handling of complex tasks.
+- Reflection and refinement: The agent can do self-criticism and self-reflection over past actions, learn from mistakes and refine them for future steps, thereby improving the quality of final results.
+
+Memory
+- Short-term memory: All in-context learning can be considered as utilizing short-term memory of the model to learn.
+- Long-term memory: This provides the agent with the capability to retain and recall (infinite) information over extended periods, often by leveraging an external vector store and fast retrieval.
+
+Tool use
+- The agent learns to call external APIs for extra information that is missing from the model weights (often hard to change after pre-training), including current information, code execution capability, access to proprietary information sources and more.
+
+COMPONENT ONE: PLANNING
+
+A complicated task usually involves many steps. An agent needs to know what they are and plan ahead.
+
+Task Decomposition
+
+Chain of thought (CoT) has become a standard prompting technique for enhancing model performance on complex tasks. The model is instructed to "think step by step" to utilize more test-time computation to decompose hard tasks into smaller and simpler steps. CoT transforms big tasks into multiple manageable tasks and sheds light on an interpretation of the model's thinking process.
+
+Tree of Thoughts extends CoT by exploring multiple reasoning possibilities at each step. It first decomposes the problem into multiple thought steps and generates multiple thoughts per step, creating a tree structure. The search process can be BFS (breadth-first search) or DFS (depth-first search) with each state evaluated by a classifier or majority vote.
+
+Task decomposition can be done:
+1. By LLM with simple prompting like "Steps for XYZ." or "What are the subgoals for achieving XYZ?"
+2. By using task-specific instructions
+3. With human inputs
+
+Self-Reflection
+
+Self-reflection is a vital aspect that allows autonomous agents to improve iteratively by refining past action decisions and correcting previous mistakes. It plays a crucial role in real-world tasks where trial and error are inevitable.
+
+ReAct integrates reasoning and acting within LLM by extending the action space to be a combination of task-specific discrete actions and the language space. The former enables LLM to interact with the environment (e.g. use Wikipedia search API), while the latter prompting LLM to generate reasoning traces in natural language.
+
+The ReAct prompt template incorporates explicit steps for LLM to think:
+
+Thought: ...
+Action: ...
+Observation: ...
+... (Repeated many times)
+
+Reflexion is a framework to equip agents with dynamic memory and self-reflection capabilities to improve reasoning skills. Reflexion has a standard RL setup, in which the reward model provides a simple binary reward and the action space follows the setup in ReAct.
+
+COMPONENT TWO: MEMORY
+
+Types of Memory
+
+In human brain, memory can be roughly categorized as:
+
+Sensory Memory: Holds sensory information for seconds. Includes iconic (visual), echoic (auditory), and haptic (touch) memory.
+
+Short-Term Memory: Holds currently aware information for 20-30 seconds. Believed to hold approximately 7 items.
+
+Long-Term Memory: Stores information for days to years with unlimited capacity. Includes:
+- Explicit/Declarative Memory: Conscious recall of facts and events. Includes episodic (events/experiences) and semantic (facts/concepts) memory.
+- Implicit/Procedural Memory: Unconscious memory of skills and habits.
+
+In the LLM context, we can map these types:
+- Sensory memory: Raw inputs (text, image, video, audio)
+- Short-term memory: In-context learning — all information in the context window
+- Long-term memory: External vector store that the agent can query and retrieve information from
+
+Maximum Inner Product Search (MIPS)
+
+The external memory can alleviate the restriction of finite attention span. Standard practice is to save the embedding representation of information into a vector store database that can support fast Maximum Inner Product Search (MIPS). This allows the agent to retrieve the most relevant information from long-term memory efficiently.
+
+Common choices of vector databases for fast MIPS:
+- Faiss: An efficient similarity search library from Meta
+- ScaNN: Scalable Nearest Neighbors from Google
+- HNSW: Hierarchical Navigable Small World graphs
+- Pinecone, Weaviate, Chroma: Managed vector database services
+
+The retrieval quality depends critically on the embedding model used. Better embeddings capture semantic meaning more accurately, leading to more relevant retrievals.
+
+COMPONENT THREE: TOOL USE
+
+Tool use is a remarkable capability of LLMs. It significantly extends the model's utility beyond language generation. The agent learns to call external APIs for extra information:
+
+- Search engines: Access current information not in training data
+- Code execution: Run and test code, compute results
+- Databases: Query structured information
+- APIs: Access proprietary information sources
+
+Tool use allows agents to ground their responses in real-world information rather than relying solely on (potentially outdated or imprecise) parametric knowledge. This is conceptually similar to how RAG grounds generation in retrieved documents.
+
+The key challenge with tool use is teaching the model when and how to use tools effectively. This often requires few-shot examples demonstrating proper tool invocation patterns.
+
+CASE STUDIES
+
+Scientific Discovery Agent
+
+A scientific discovery agent can use tools to:
+1. Search scientific literature for related work
+2. Execute code for data analysis
+3. Query databases for molecular information
+4. Generate hypotheses based on retrieved evidence
+
+The agent's long-term memory stores experimental results and findings, enabling it to build on previous work.
+
+Generative Agents Simulation
+
+The Generative Agents paper demonstrates agents with:
+- Memory stream: A long-term memory database storing agent experiences
+- Reflection: Periodically synthesizing memories into higher-level observations
+- Planning: Using reflections to create plans for future action
+
+Each memory is stored with an embedding for retrieval. The retrieval score combines:
+- Recency: More recent memories score higher
+- Importance: More significant events score higher  
+- Relevance: Semantic similarity to current context
+
+This multi-factor retrieval is more sophisticated than simple semantic search and produces more human-like agent behavior.
+
+CHALLENGES
+
+The main challenges facing LLM-powered autonomous agents:
+
+Finite context length: The context window limits how much information can be processed at once. Long-term memory and retrieval mechanisms help but introduce complexity.
+
+Long-term planning: LLMs struggle with tasks requiring many sequential steps, where early mistakes compound over time. Self-reflection helps but doesn't fully solve this.
+
+Natural language interfaces: When agents depend on natural language to interact with tools, the reliability of this interface is critical. Small misunderstandings in tool invocation can lead to failures.
+
+Hallucination: Despite grounding mechanisms, agents can still confabulate information, especially in knowledge domains not well-covered by retrieval corpora.
+
+Efficiency: Calling multiple tools and performing retrieval adds significant latency compared to direct LLM inference.
+
+MEMORY AND RAG CONNECTION
+
+The connection between agent memory systems and RAG is fundamental. Long-term memory in agents is essentially a RAG system:
+- Store important information as embeddings in a vector database
+- Retrieve relevant memories given current context
+- Ground current decisions in retrieved memories
+
+The quality of this retrieval determines how well the agent can leverage its accumulated knowledge. Poor retrieval leads to agents "forgetting" important information or making decisions inconsistent with past experience.
+
+This is why advances in RAG techniques — better chunking, improved embeddings, sophisticated reranking — directly improve agent performance. The agent's ability to selectively recall relevant past experience depends entirely on the quality of its retrieval system.
+
+CITATION: Weng, Lilian. (Jun 2023). LLM-powered Autonomous Agents. lilianweng.github.io. https://lilianweng.github.io/posts/2023-06-23-agent/

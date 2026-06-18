@@ -1,0 +1,242 @@
+TITLE: RAGAS — Evaluation Framework for Retrieval Augmented Generation
+SOURCE: docs.ragas.io
+TYPE: Evaluation framework documentation with metric definitions and tables
+
+INTRODUCTION
+
+RAGAS (RAG Assessment) is an open-source framework for evaluating Retrieval Augmented Generation systems. It provides reference-free metrics that do not require human-annotated ground truth, making it practical for production use.
+
+The framework focuses on evaluating three key aspects of RAG systems:
+1. The quality of the retrieved context (retriever evaluation)
+2. The faithfulness of the generated answer to the context (generator evaluation)
+3. The relevancy of the answer to the original question
+
+SECTION 1: CORE METRICS
+
+1.1 Faithfulness
+
+Definition: Faithfulness measures how factually consistent the generated answer is with the retrieved context. It quantifies whether all claims in the answer can be inferred from the provided context.
+
+Score range: 0 to 1 (higher is better)
+
+Calculation:
+- Step 1: Extract all factual claims from the generated answer using an LLM
+- Step 2: For each claim, verify whether it can be inferred from the retrieved context
+- Step 3: Faithfulness = (Number of claims supported by context) / (Total number of claims)
+
+Example:
+Question: When was the first super bowl?
+Answer: The first superbowl was held on Jan 15, 1967
+Retrieved context: The First AFL-NFL World Championship Game was played on January 15, 1967
+
+Claims extracted:
+- "The first super bowl was held on Jan 15, 1967" → Supported by context ✓
+Faithfulness score: 1/1 = 1.0
+
+Why faithfulness matters: A low faithfulness score indicates hallucination — the model is asserting facts not present in the retrieved context. This is a critical safety concern in production RAG systems, especially in regulated domains like healthcare, finance, and law.
+
+Alert threshold: Most enterprise deployments flag responses with faithfulness below 0.85 for human review.
+
+1.2 Answer Relevancy
+
+Definition: Answer Relevancy focuses on assessing how pertinent the generated answer is to the given question. Lower scores are assigned to answers that are incomplete or contain redundant information.
+
+Score range: 0 to 1 (approximately, due to cosine similarity properties)
+
+Calculation:
+- Step 1: Generate N possible questions that the answer could address (reverse engineering)
+- Step 2: Calculate cosine similarity between each generated question and the original question
+- Step 3: Answer Relevancy = mean(cosine_similarity(generated_questions, original_question))
+
+Mathematical formulation:
+answer_relevancy = (1/N) * sum(cosine_similarity(E_gi, E_o))
+
+Where E_gi is the embedding of each generated question and E_o is the embedding of the original question.
+
+Example of a low-relevancy answer:
+Question: "What is the capital of France?"
+Answer: "France is a country in Western Europe known for its cuisine, fashion, and the Eiffel Tower. Paris is its capital." 
+The answer contains relevant information but is also padded with irrelevant details, reducing relevancy.
+
+1.3 Context Precision
+
+Definition: Context Precision measures how much of the retrieved context is actually relevant to answering the question. It penalizes retrieval pipelines that return irrelevant context alongside relevant context.
+
+Score range: 0 to 1 (higher is better)
+
+Calculation:
+Context Precision considers the ranking of relevant chunks in the retrieved results. A high-precision retrieval pipeline returns relevant chunks at the top of the ranking.
+
+For each position k in the retrieved context:
+- Precision@k = (number of relevant chunks in top-k) / k
+- Context Precision = mean(Precision@k * relevance_of_chunk_at_k)
+
+This metric rewards retrieval systems that rank the most relevant chunks highest, not just those that retrieve relevant chunks somewhere in the list.
+
+Why context precision matters: Low context precision means the LLM must process irrelevant information to find the relevant parts. This wastes tokens, increases latency, and can confuse the model, leading to lower quality answers.
+
+Enterprise target: Context precision above 0.75 for most query types.
+
+1.4 Context Recall
+
+Definition: Context Recall measures the extent to which the retrieved context contains all the information necessary to answer the question. It checks whether the retrieval pipeline missed any important information.
+
+Score range: 0 to 1 (higher is better)
+
+Calculation:
+- Given a ground truth answer (or reference), decompose it into individual statements
+- For each statement, check whether it can be attributed to retrieved context
+- Context Recall = (statements attributable to context) / (total statements in ground truth)
+
+This metric requires a reference answer, unlike the other RAGAS metrics.
+
+Why context recall matters: Low context recall means the retriever is missing important information that the LLM needs to answer the question correctly. The generator cannot compensate for retrieval failures — it can only work with what it receives.
+
+1.5 Answer Correctness
+
+Definition: Answer Correctness measures the accuracy of the generated answer when compared to a ground truth answer. It combines both semantic similarity and factual overlap.
+
+Score range: 0 to 1 (higher is better)
+
+Calculation: Answer Correctness is a weighted combination of:
+- Factual similarity: F1 score measuring overlap of factual claims
+- Semantic similarity: Cosine similarity between answer and ground truth embeddings
+
+answer_correctness = w1 * factual_similarity + w2 * semantic_similarity
+
+Default weights: w1 = 0.75 (factual), w2 = 0.25 (semantic)
+
+SECTION 2: EVALUATION IN PRACTICE
+
+2.1 Running RAGAS Evaluation
+
+```python
+from ragas import evaluate
+from ragas.metrics import (
+    context_precision,
+    faithfulness,
+    answer_relevancy,
+    context_recall,
+)
+
+result = evaluate(
+    dataset,
+    metrics=[
+        context_precision,
+        faithfulness,
+        answer_relevancy,
+        context_recall,
+    ],
+)
+
+print(result)
+# {'context_precision': 0.817, 'faithfulness': 0.892, 'answer_relevancy': 0.874}
+```
+
+2.2 Metric Relationships and Trade-offs
+
+The RAGAS metrics measure different aspects of the RAG pipeline:
+
+| Metric | Measures | Pipeline Component |
+|---|---|---|
+| Context Precision | Signal-to-noise in retrieval | Retriever |
+| Context Recall | Completeness of retrieval | Retriever |
+| Faithfulness | Hallucination rate | Generator |
+| Answer Relevancy | Response quality | Generator |
+| Answer Correctness | Overall accuracy | Full pipeline |
+
+2.3 Diagnostic Patterns
+
+Different metric combinations point to different root causes:
+
+Low faithfulness only: Generator is hallucinating. Check: temperature settings, system prompt grounding instructions, whether model is following retrieved context.
+
+Low context precision only: Retriever returning irrelevant documents. Check: similarity threshold, chunk size, embedding model quality.
+
+Low context recall only: Retriever missing important information. Check: knowledge base coverage, retrieval k value, chunk size (may be too small).
+
+Low faithfulness + low context precision: Both retriever and generator have issues. The irrelevant context may be confusing the generator.
+
+High faithfulness + low answer correctness: Generator is faithfully reporting what's in the context, but the context itself is wrong or outdated. Check: knowledge base freshness.
+
+2.4 Production Monitoring
+
+RAGAS is designed for both offline evaluation and production monitoring:
+
+Offline: Run on a golden test set before deployment to establish baselines and catch regressions.
+
+Production: Sample 5-10% of live traffic and run RAGAS evaluation asynchronously. Alert when metrics drop below thresholds.
+
+Recommended alert thresholds for enterprise RAG:
+- Faithfulness < 0.85: High hallucination risk
+- Context Precision < 0.70: Retrieval quality degrading
+- Context Recall < 0.75: Missing important information
+- Answer Relevancy < 0.80: Responses becoming irrelevant
+
+SECTION 3: NOISE SENSITIVITY
+
+Definition: Noise Sensitivity measures how much the generated answer changes when irrelevant context is added to relevant context. A robust RAG system should be able to identify and use relevant context even in the presence of noise.
+
+This metric is particularly important when evaluating production systems where retrieval quality varies. High noise sensitivity indicates the model is easily confused by irrelevant context — a significant reliability concern.
+
+SECTION 4: ADVANCED USAGE
+
+4.1 Custom LLM Configuration
+
+RAGAS uses an LLM for most metrics. You can configure which LLM is used:
+
+```python
+from ragas.llms import LangchainLLMWrapper
+from langchain_openai import ChatOpenAI
+
+evaluator_llm = LangchainLLMWrapper(ChatOpenAI(model="gpt-4"))
+```
+
+Using a more capable model for evaluation than for generation often improves evaluation reliability. This mirrors the LLM-as-judge pattern where a stronger model evaluates a weaker model's outputs.
+
+4.2 Batch Evaluation
+
+For large datasets, RAGAS supports batch evaluation with rate limiting:
+
+```python
+result = evaluate(
+    dataset,
+    metrics=metrics,
+    llm=evaluator_llm,
+    embeddings=evaluator_embeddings,
+    batch_size=10,
+    max_workers=4,
+)
+```
+
+4.3 Integration with LangSmith
+
+RAGAS integrates with LangSmith for tracking evaluation results over time:
+
+```python
+from ragas.integrations.langsmith import evaluate as langsmith_evaluate
+
+langsmith_evaluate(
+    dataset_name="my-rag-dataset",
+    llm_or_chain=rag_chain,
+    metrics=metrics,
+)
+```
+
+This enables tracking metric trends over time, correlating evaluation results with production traces, and building dashboards for RAG performance monitoring.
+
+SECTION 5: METRIC SELECTION GUIDE
+
+For different use cases, prioritize different metrics:
+
+Customer support RAG: Prioritize faithfulness (don't make false promises) and answer relevancy (answers the actual question).
+
+Legal/compliance RAG: Prioritize faithfulness (factual accuracy critical) and context recall (can't miss relevant policy).
+
+Knowledge base search: Prioritize context precision (return only relevant results) and answer correctness.
+
+Conversational RAG: Prioritize answer relevancy and faithfulness across multi-turn conversations.
+
+Research assistance: Prioritize context recall (comprehensive coverage) and answer correctness.
+
+CITATION: RAGAS documentation (docs.ragas.io). Open source framework, Apache 2.0 license. Used for educational purposes.

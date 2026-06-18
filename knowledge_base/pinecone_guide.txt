@@ -1,0 +1,199 @@
+TITLE: Retrieval Augmented Generation (RAG) — Enterprise Guide
+SOURCE: pinecone.io/learn/series/rag/
+TYPE: Conversational enterprise guide with technical depth
+
+INTRODUCTION: WHAT IS RAG AND WHY IT MATTERS
+
+Retrieval Augmented Generation (RAG) has become the go-to method for building AI applications that need to answer questions using specific, up-to-date, or private knowledge.
+
+The core problem RAG solves: Large language models are trained on general internet data and freeze that knowledge at their training cutoff. They don't know about your company's internal policies, your proprietary data, or events after their training date. They also "hallucinate" — confidently stating incorrect facts.
+
+RAG fixes this by retrieving relevant information from your knowledge base at query time and grounding the LLM's response in that retrieved information. The LLM becomes a reasoning and language engine that operates on your data, rather than a static knowledge repository.
+
+The two-stage architecture:
+1. Ingestion (offline): Load your documents → chunk → embed → store in vector database
+2. Query (online): Embed query → search vector DB → retrieve relevant chunks → pass to LLM → generate answer
+
+THE INGESTION PIPELINE
+
+Step 1: Document Loading
+
+You may have structured or unstructured data in the form of text, PDFs, emails, internal wikis, or databases. The first step is loading all of this into a unified format that your RAG system can process.
+
+Different document types require different loaders:
+- PDFs: Parse structure, extract tables separately from prose
+- HTML: Strip navigation, extract main content
+- Office documents: Handle embedded images, charts, formatting
+- Code: Preserve syntax, handle different programming languages
+
+Enterprise consideration: Documents often have access controls. Your ingestion pipeline should preserve and propagate these permissions so that retrieval respects them. Users should only retrieve documents they're authorized to see.
+
+Step 2: Chunking
+
+After cleaning the data, you need to chunk it — dividing each document into smaller pieces for embedding and retrieval.
+
+Why chunk? Two reasons:
+1. Embedding models have context window limits (typically 512-8192 tokens)
+2. Smaller, focused chunks retrieve more precisely than entire documents
+
+Chunking strategies:
+
+Fixed-size chunking: Split at every N tokens regardless of content boundaries. Simple and fast, but can split sentences or concepts mid-way.
+
+Sentence-based chunking: Split at sentence boundaries. Preserves sentence integrity but produces variable-sized chunks.
+
+Semantic chunking: Split where topics change. Produces the most coherent chunks but requires more computation.
+
+Hierarchical chunking: Create both parent (section) and child (paragraph) chunks. Retrieve at the child level but pass the parent for context.
+
+The chunk size matters enormously. As Roie Schwaber-Cohen from Pinecone explains: "The reason to start thinking about how to break your content into smaller chunks is so that when you retrieve it, it actually hits the correct thing. You're taking a user's query and embedding it. You're going to compare that with an embedding of your content. If the size of the content that you're embedding is wildly different from the size of the user's query, you're going to have a higher chance of getting a lower similarity score."
+
+Overlap: Add chunk overlap (10-20% of chunk size) so information at boundaries isn't lost.
+
+Step 3: Embedding
+
+Using an embedding model, embed each chunk and load it into the vector database. The embedding model converts data chunks into vector embeddings — numerical representations of the data's meaning.
+
+Choosing an embedding model:
+- OpenAI text-embedding-3-small: Great general-purpose model, fast and cost-effective
+- OpenAI text-embedding-3-large: Higher accuracy, more expensive
+- Cohere embed-multilingual-v3: Best for multilingual applications
+- Open source models (BGE, E5): Free but require infrastructure
+
+Critical rule: The same embedding model must be used for both indexing and querying. Mixing models produces meaningless similarity scores.
+
+Hybrid search: For many use cases, combining dense vector search with sparse BM25 keyword search outperforms either alone. Dense search captures semantic meaning; sparse search captures exact keywords. Combine with Reciprocal Rank Fusion (RRF) for best results.
+
+Step 4: Vector Database
+
+Store your embeddings in a vector database that supports fast similarity search at scale.
+
+Options:
+- Pinecone: Fully managed, no infrastructure, scales automatically
+- Weaviate: Open source, rich filtering, GraphQL API
+- Qdrant: Open source, Rust-based, high performance
+- pgvector: PostgreSQL extension, good for teams already using Postgres
+- Chroma: Lightweight, great for prototyping
+
+CHAPTER 1: RERANKERS AND TWO-STAGE RETRIEVAL
+
+Why your embedding model isn't enough
+
+Retrieval Augmented Generation (RAG) is an overloaded term. It promises the world, but after developing a RAG pipeline, many developers find it doesn't work as well as expected. The truth is that there is more to RAG than putting documents into a vector database and adding an LLM on top.
+
+The fundamental limitation of embedding-based retrieval: When you embed a query and embed documents, you're comparing them in a high-dimensional space where "closeness" approximates semantic similarity. But this approximation has limits.
+
+The problem of bi-encoders: Standard embedding models encode the query and document independently, then measure their similarity. This is fast — you can pre-compute document embeddings — but the model never "sees" the query and document together. It can miss subtle relevance signals that only become apparent when considering both texts simultaneously.
+
+Enter cross-encoders (rerankers): A cross-encoder takes both the query and document as input simultaneously and outputs a relevance score. By reading both together, it captures nuanced relevance that bi-encoders miss.
+
+The trade-off: Cross-encoders are too slow to run across millions of documents (they can't pre-compute). But they're fast enough to rerank a small set of candidates.
+
+Two-stage retrieval:
+Stage 1 (retrieval): Use fast bi-encoder embedding to retrieve top-K candidates (typically 20-100) from the entire corpus
+Stage 2 (reranking): Use accurate cross-encoder to rerank those K candidates
+
+This two-stage approach gives you the speed of bi-encoders at scale combined with the accuracy of cross-encoders for the final selection.
+
+Real-world impact: Research consistently shows reranking improves RAG quality significantly. The reranker promotes contextually relevant chunks that the embedding model scored lower, and demotes chunks that superficially matched but aren't actually relevant.
+
+Popular reranking models:
+- Cohere Rerank: Managed API, easy to use, strong performance
+- cross-encoder/ms-marco-MiniLM-L-6-v2: Open source, fast, good quality
+- BGE Reranker: Strong open-source option
+- Jina Reranker: Code-aware reranking capability
+
+Typical configuration: Retrieve top-20, rerank all 20, pass top-5 to LLM.
+
+Lost in the middle: Research shows LLMs pay more attention to content at the beginning and end of their context window than the middle. Strategic chunk ordering after reranking can improve answer quality. The "sandwich" approach — placing the most relevant chunk first, second most relevant last, and less relevant chunks in the middle — mitigates this issue.
+
+CHAPTER 2: CHOOSING AN EMBEDDING MODEL
+
+The embedding model you choose fundamentally determines your retrieval quality ceiling. A perfect chunking strategy and advanced reranking can't compensate for a poor embedding model.
+
+Evaluation dimensions:
+
+Accuracy: Does the model correctly identify semantically similar content? MTEB (Massive Text Embedding Benchmark) provides standardized scores across many tasks.
+
+Speed: How fast can you embed new documents (indexing speed) and queries (query latency)?
+
+Cost: API cost per million tokens for commercial models, or compute cost for self-hosted.
+
+Context window: Maximum input length. Longer context windows allow larger chunks without truncation.
+
+Domain performance: General models may underperform on specialized domains (legal, medical, code).
+
+Multilingual support: Critical for global deployments.
+
+The embedding quality matters most when:
+- Your queries and documents use different vocabulary (e.g., user asks informally about what's covered formally in a policy)
+- You need to retrieve across concept boundaries (e.g., "how to make money" should retrieve content about "revenue generation")
+- Documents contain domain-specific jargon
+
+BUILDING RAG THAT ACTUALLY WORKS: AVOIDING COMMON FAILURES
+
+The most common RAG failure patterns:
+
+1. Poor chunking: Chunks that are too large dilute relevance; chunks that are too small lose context. The right size depends on your documents and queries.
+
+2. Missing reranking: First-stage retrieval is imprecise. Without reranking, irrelevant chunks pollute the LLM's context.
+
+3. No hybrid search: Dense-only search misses exact keyword matches. Sparse-only search misses semantic matches. Hybrid consistently outperforms either alone.
+
+4. Stale knowledge base: Documents get updated but re-indexing doesn't trigger. Answers become wrong while confidence remains high.
+
+5. No evaluation: Teams deploy RAG without measuring faithfulness, precision, or recall. Problems only surface when users complain.
+
+6. Ignoring metadata: Rich metadata enables powerful filtering. Without it, you must rely entirely on semantic similarity.
+
+7. Wrong context window usage: More context isn't always better. Irrelevant context confuses the LLM. Use reranking and filtering to keep context focused.
+
+PRODUCTION CONSIDERATIONS
+
+Latency budget: Break down query latency:
+- Query embedding: 20-50ms
+- Vector search: 10-100ms (depending on index size)
+- Reranking (if used): 100-500ms
+- LLM generation: 500-3000ms
+- Total: 700-3700ms typical
+
+Cost per query: Calculate fully-loaded cost:
+- Embedding API: fractions of a cent
+- Vector DB query: fractions of a cent  
+- Reranking API: fractions of a cent
+- LLM generation: 0.1-2 cents depending on model and response length
+
+At millions of queries per day, even fractions of cents add up significantly.
+
+Monitoring and observability: Production RAG requires continuous monitoring:
+- Retrieval quality metrics (precision, recall) — use RAGAS
+- Latency percentiles (p50, p95, p99) for each pipeline stage
+- Hallucination rate via faithfulness scoring
+- Knowledge base freshness — track time since last update
+
+When answers start degrading, observability tells you where in the pipeline to look.
+
+Sparse vs Dense Embeddings: Key Differences
+
+Understanding the difference between sparse and dense embeddings is fundamental to building effective RAG systems.
+
+Dense embeddings are continuous vector representations — typically 768 to 1536 floating-point numbers — produced by neural language models such as Google text-embedding-004, OpenAI text-embedding-3, or Cohere Embed. Every dimension in a dense vector carries meaning, though no single dimension is interpretable on its own. Dense embeddings capture semantic meaning: "car" and "automobile" will have similar dense vectors because the model understands they refer to the same concept, even though they share no characters. Dense vectors are compared using cosine similarity or dot product. The strength of dense embeddings is semantic understanding — they can match a query to a document even when no keywords overlap.
+
+Sparse embeddings represent text as high-dimensional vectors where most values are zero. The classic sparse representation is TF-IDF (Term Frequency-Inverse Document Frequency) or BM25. In a sparse vector, each dimension corresponds to a specific word in the vocabulary. A document about "neural networks" might have non-zero values only in the dimensions for "neural" and "networks" — all other dimensions are zero. Because vocabularies are large (50,000+ words), sparse vectors can have 50,000+ dimensions but only a handful of non-zero values. Sparse embeddings excel at exact keyword matching: if a user searches for "HNSW index", sparse retrieval will find documents containing exactly those words, even if semantically similar documents use different terminology.
+
+The fundamental trade-off:
+- Dense embeddings are better at semantic search — finding documents that mean the same thing even with different words
+- Sparse embeddings are better at exact keyword search — finding documents containing specific technical terms, product names, model numbers, or codes
+- Dense embeddings can miss exact matches if the model's training didn't see the specific term
+- Sparse embeddings miss semantic relationships — "automobile" will not match a query for "car"
+
+Hybrid search combines both approaches. In a hybrid RAG pipeline, each query is scored by both a dense retriever (semantic) and a sparse retriever (BM25 keyword). The results are fused using Reciprocal Rank Fusion (RRF): each document gets a score of 1/(60 + rank_dense) + 1/(60 + rank_sparse). Documents that rank well in both systems float to the top, giving you the best of semantic understanding and exact keyword precision.
+
+When to use dense vs sparse vs hybrid:
+- Dense only: general question answering, summarization, conversational queries
+- Sparse only: legal document retrieval by citation, code search, product catalog lookup by SKU
+- Hybrid (recommended for most enterprise RAG): combines benefits of both, especially important for domains with specialized terminology
+
+Modern vector databases like Pinecone, Weaviate, and Qdrant all support hybrid search natively, storing both sparse and dense vectors per document and fusing results at query time.
+
+CITATION: Pinecone learning center (pinecone.io/learn/series/rag/). Used for educational purposes.
