@@ -61,31 +61,16 @@ No prior ML knowledge required. The app explains every concept in plain English.
 
 ## Getting started
 
-### Prerequisites
+### Deploy on Streamlit Cloud (recommended)
 
-- Python 3.10+
-- A free API key from at least one of: [Google AI Studio](https://aistudio.google.com) (Gemini), [Anthropic](https://console.anthropic.com), or [OpenAI](https://platform.openai.com)
-- Optional: [Cohere](https://cohere.com) free key for live re-ranking
+1. Go to [share.streamlit.io](https://share.streamlit.io) and sign in with GitHub
+2. Click **New app**
+3. Select this repo → branch `main` → main file `app.py`
+4. Click **Deploy**
 
-### Installation
+Once live, add your API key in the sidebar under **Settings** to enable the online pipeline steps. A free key from [Google AI Studio](https://aistudio.google.com) (Gemini) is the easiest option — no credit card required.
 
-```bash
-git clone https://github.com/poojatyagi1807/behind-the-RAG.git
-cd behind-the-RAG
-python3 -m venv venv
-source venv/bin/activate        # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-### Run
-
-```bash
-streamlit run app.py
-```
-
-Open [http://localhost:8501](http://localhost:8501) in your browser.
-
-Add your API key in the sidebar under **Settings** to enable the online pipeline steps.
+Optional: a free [Cohere](https://cohere.com) key enables live re-ranking in Step 10.
 
 ---
 
