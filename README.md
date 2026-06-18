@@ -139,8 +139,3 @@ behind-the-rag/
 - All embeddings run **locally** (no API key needed for the offline pipeline).
 - API keys are never stored — they live only in your browser session.
 
----
-
-## License
-
-MIT
