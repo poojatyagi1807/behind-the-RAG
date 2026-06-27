@@ -152,6 +152,65 @@ Est. cost:          ~${max(gen_latency * 0.0000015, 0.001):.4f}""", language=Non
     st.info("All three drift types look identical from outside — gradually worse answers. Only observability tells you which type is happening and where to fix it.")
 
     st.markdown("---")
+    st.markdown("**RLHF — turning human signals into pipeline improvements**")
+
+    st.markdown("""
+<div style="background:var(--color-background-secondary);border-left:3px solid #9B59B6;
+border-radius:0 8px 8px 0;padding:12px 16px;font-size:12px;color:var(--color-text-secondary);
+line-height:1.7;margin-bottom:16px">
+<strong style="color:#c78fff">RLHF in RAG is not the same as RLHF used to train ChatGPT.</strong><br><br>
+In LLM training, RLHF adjusts the model's weights based on human preference scores — expensive, slow, requires thousands of examples.<br><br>
+In RAG, RLHF means using signals from real users — thumbs up/down, query retries, citation clicks, session abandonment —
+to automatically improve <em>which chunks get retrieved</em> and <em>how they're ranked</em>.
+It's not retraining the LLM. It's retraining the <strong>retrieval layer</strong> based on what humans found useful.
+Every thumbs down tells you: these chunks were retrieved, this answer was generated, something went wrong — adjust accordingly.
+</div>
+""", unsafe_allow_html=True)
+
+    col1, col2, col3, col4, col5 = st.columns(5)
+    signals = [
+        ("👍", "Thumbs up", "Answer was useful", "Boost contributing chunks — raise retrieval weight for this query pattern", "#1D9E75"),
+        ("👎", "Thumbs down", "Answer was wrong or unhelpful", "Penalise contributing chunks — lower score in future similar queries", "#E24B4A"),
+        ("🔄", "Query retry", "User asked again immediately", "Answer was insufficient — flag query+chunks for investigation", "#BA7517"),
+        ("🔗", "Citation click", "User verified the source", "Strong trust signal — chunk was credible, boost in re-ranker", "#4285F4"),
+        ("🚪", "Session abandon", "User left without engaging", "Answer was irrelevant or confusing — review retrieval for intent", "#9B59B6"),
+    ]
+    for col, (icon, name, meaning, action, color) in zip([col1, col2, col3, col4, col5], signals):
+        with col:
+            st.markdown(
+                f"<div style='background:var(--color-background-secondary);border-top:3px solid {color};"
+                f"border-radius:0 0 8px 8px;padding:10px;height:100%'>"
+                f"<div style='font-size:20px;text-align:center;margin-bottom:6px'>{icon}</div>"
+                f"<div style='font-size:11px;font-weight:700;color:{color};margin-bottom:4px;text-align:center'>{name}</div>"
+                f"<div style='font-size:10px;color:var(--color-text-secondary);margin-bottom:6px;font-style:italic'>{meaning}</div>"
+                f"<div style='font-size:10px;color:var(--color-text-primary);line-height:1.5'>{action}</div>"
+                f"</div>",
+                unsafe_allow_html=True,
+            )
+
+    st.markdown("")
+    st.markdown("""
+<div style="background:var(--color-background-secondary);border-radius:8px;padding:14px 16px;
+font-size:12px;line-height:1.8;margin:12px 0">
+<strong style="color:var(--color-text-primary)">The RLHF loop in 4 steps:</strong><br>
+<span style="color:#9B59B6">①</span> User gets answer →
+<span style="color:#9B59B6">②</span> Gives signal (👍 / 👎 / retries) →
+<span style="color:#9B59B6">③</span> Signal logged with chunk IDs that contributed to the answer →
+<span style="color:#9B59B6">④</span> Re-ranker weights updated — next query with similar intent retrieves better chunks
+</div>
+""", unsafe_allow_html=True)
+
+    st.markdown("""
+<div style="background:#2a1a00;border:0.5px solid #BA7517;border-radius:8px;
+padding:12px 14px;font-size:12px;color:#f0d090;line-height:1.7;margin-bottom:8px">
+⚠️ <strong>This app vs enterprise:</strong> No feedback capture is implemented here — thumbs up/down are not wired up, and no chunk weights are adjusted.
+In production, Cohere's re-ranker can be fine-tuned on <em>(query, good_chunk, bad_chunk)</em> triplets built from human feedback.
+Pinecone and Weaviate both support preference-based score boosting.
+The loop closes when a thumbs down in week 1 measurably improves retrieval in week 3.
+</div>
+""", unsafe_allow_html=True)
+
+    st.markdown("---")
     st.markdown("**The closed feedback loop — how all 15 steps connect:**")
     st.components.v1.html("""
 <style>
@@ -365,6 +424,14 @@ Est. cost:          ~${max(gen_latency * 0.0000015, 0.001):.4f}""", language=Non
             "Notion AI collected thousands of thumbs down signals in their first month — feedback sat in a database with no review process, PM assumed engineering was analyzing it, engineering assumed PM was triaging it, 6 weeks passed before anyone built the query to look at it.",
             "No user feedback mechanism — thumbs up/down are not implemented in this app. The feedback loop shown in this step is educational and illustrative, not a live data capture or triage system.",
             "User feedback workflow owned by PM — thumbs down triggers automated ticket creation, PM reviews aggregate daily, patterns mapped to pipeline steps weekly, fix tickets assigned to named owners within 48 hours of pattern identification, feedback loop closure rate tracked as a PM metric.",
+        ),
+        (
+            "How do you turn user feedback into retrieval improvements?",
+            "When a user clicks thumbs down, do you know which chunks contributed to the bad answer and does that signal automatically adjust how those chunks score in future queries — or does the feedback disappear into a database nobody acts on?",
+            "Define a feedback-to-retrieval improvement pipeline before launch — map each signal type to a specific pipeline action, set minimum signal volume before weights are adjusted to avoid overfitting to single signals, and document who reviews weight changes before they go live.",
+            "Intercom implemented thumbs down feedback but routed all signals to a product analytics dashboard with no pipeline integration. After 6 months they had 40,000 negative signals and retrieval weights were identical to day one. A junior engineer spent 3 weeks backfilling the integration that should have been built first.",
+            "No feedback capture in this app — thumbs up/down are not implemented. RLHF is taught as an educational concept; the actual signal capture and weight adjustment loop is not running.",
+            "RLHF pipeline owned jointly by PM and ML engineer — thumbs down triggers chunk penalty logged with query ID and chunk IDs, minimum 50 signals before weight update, PM reviews proposed weight changes weekly, A/B test new weights on 10% of traffic before full rollout, improvement measured against golden dataset baseline.",
         ),
         (
             "How do you monitor for silent degradation?",
