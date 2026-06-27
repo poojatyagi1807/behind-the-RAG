@@ -247,6 +247,126 @@ def render():
 """, height=1150)
 
     st.markdown("---")
+
+    # ── Chunk Inspector ───────────────────────────────────────────────────────
+    st.markdown("**🔬 Chunk Inspector — browse what's actually in the index**")
+    st.caption("Every answer the online pipeline gives comes from one of these chunks. This is what retrieval searches through.")
+
+    chunks = st.session_state.get("kb_chunks", [])
+
+    if not chunks:
+        st.info("Chunks not yet available — complete the offline pipeline first.")
+    else:
+        # ── Chunks per document ───────────────────────────────────────────────
+        from collections import Counter
+        doc_counts = Counter(c.doc_title for c in chunks)
+
+        st.markdown("**Chunks per document:**")
+        total = len(chunks)
+        for doc, count in sorted(doc_counts.items(), key=lambda x: -x[1]):
+            pct = count / total
+            st.markdown(
+                f"<div style='margin-bottom:6px'>"
+                f"<div style='display:flex;justify-content:space-between;font-size:12px;"
+                f"color:var(--color-text-primary);margin-bottom:3px'>"
+                f"<span>{doc}</span><span style='color:var(--color-text-tertiary)'>{count} chunks</span></div>"
+                f"<div style='height:6px;background:var(--color-background-secondary);border-radius:3px'>"
+                f"<div style='height:6px;width:{pct*100:.0f}%;background:#185FA5;border-radius:3px'></div></div>"
+                f"</div>",
+                unsafe_allow_html=True
+            )
+
+        st.markdown("")
+
+        # ── Filters ───────────────────────────────────────────────────────────
+        col_f1, col_f2, col_f3 = st.columns(3)
+        with col_f1:
+            docs = ["All documents"] + sorted(doc_counts.keys())
+            selected_doc = st.selectbox("Filter by document", docs, key="ci_doc")
+        with col_f2:
+            positions = ["All positions", "early", "middle", "late"]
+            selected_pos = st.selectbox("Filter by position", positions, key="ci_pos")
+        with col_f3:
+            flags = ["All chunks", "Has tables", "Has code", "Has citations"]
+            selected_flag = st.selectbox("Filter by content type", flags, key="ci_flag")
+
+        # ── Apply filters ─────────────────────────────────────────────────────
+        filtered = chunks
+        if selected_doc != "All documents":
+            filtered = [c for c in filtered if c.doc_title == selected_doc]
+        if selected_pos != "All positions":
+            filtered = [c for c in filtered if c.chunk_position == selected_pos]
+        if selected_flag == "Has tables":
+            filtered = [c for c in filtered if c.has_tables]
+        elif selected_flag == "Has code":
+            filtered = [c for c in filtered if c.has_code]
+        elif selected_flag == "Has citations":
+            filtered = [c for c in filtered if c.has_citations]
+
+        st.caption(f"Showing {len(filtered)} of {total} chunks")
+
+        # ── Chunk cards ───────────────────────────────────────────────────────
+        page_size = 5
+        page = st.session_state.get("ci_page", 0)
+        total_pages = max(1, (len(filtered) + page_size - 1) // page_size)
+        page = min(page, total_pages - 1)
+        page_chunks = filtered[page * page_size:(page + 1) * page_size]
+
+        for chunk in page_chunks:
+            flags_html = ""
+            if chunk.has_tables:
+                flags_html += "<span style='background:#E3F2FD;color:#0D47A1;font-size:10px;padding:1px 6px;border-radius:4px;margin-right:4px'>📊 table</span>"
+            if chunk.has_code:
+                flags_html += "<span style='background:#F3E5F5;color:#4A148C;font-size:10px;padding:1px 6px;border-radius:4px;margin-right:4px'>💻 code</span>"
+            if chunk.has_citations:
+                flags_html += "<span style='background:#E8F5E9;color:#1B5E20;font-size:10px;padding:1px 6px;border-radius:4px;margin-right:4px'>📎 citations</span>"
+
+            pos_color = {"early": "#0F6E56", "middle": "#185FA5", "late": "#9B59B6"}.get(chunk.chunk_position, "#888")
+
+            st.markdown(f"""
+<div style="background:var(--color-background-secondary);border-radius:10px;
+padding:14px 16px;margin-bottom:10px;border-left:3px solid {pos_color}">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;flex-wrap:wrap;gap:6px">
+    <div>
+      <span style="font-size:11px;font-weight:600;color:var(--color-text-primary)">{chunk.doc_title}</span>
+      <span style="font-size:10px;color:var(--color-text-tertiary);margin-left:8px">§ {chunk.section}</span>
+    </div>
+    <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">
+      {flags_html}
+      <span style="font-size:10px;color:{pos_color};background:{pos_color}18;padding:1px 6px;border-radius:4px">{chunk.chunk_position}</span>
+    </div>
+  </div>
+  <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.65;
+  background:var(--color-background-primary);border-radius:6px;padding:10px 12px;margin-bottom:10px;
+  font-family:inherit;white-space:pre-wrap">{chunk.text[:400]}{"…" if len(chunk.text) > 400 else ""}</div>
+  <div style="display:flex;gap:16px;flex-wrap:wrap">
+    <span style="font-size:10px;color:var(--color-text-tertiary)">🔤 {chunk.word_count} words · {chunk.tokens} tokens</span>
+    <span style="font-size:10px;color:var(--color-text-tertiary)">📄 {chunk.doc_type}</span>
+    <span style="font-size:10px;color:var(--color-text-tertiary)">🔑 {chunk.chunk_id}</span>
+    <span style="font-size:10px;color:var(--color-text-tertiary)">🧠 {chunk.chunking_strategy}</span>
+  </div>
+</div>
+""", unsafe_allow_html=True)
+
+        # ── Pagination ────────────────────────────────────────────────────────
+        if total_pages > 1:
+            p_col1, p_col2, p_col3 = st.columns([1, 2, 1])
+            with p_col1:
+                if st.button("← Prev", disabled=(page == 0), key="ci_prev"):
+                    st.session_state.ci_page = page - 1
+                    st.rerun()
+            with p_col2:
+                st.markdown(
+                    f"<div style='text-align:center;font-size:12px;color:var(--color-text-tertiary);padding-top:8px'>"
+                    f"Page {page + 1} of {total_pages}</div>",
+                    unsafe_allow_html=True
+                )
+            with p_col3:
+                if st.button("Next →", disabled=(page == total_pages - 1), key="ci_next"):
+                    st.session_state.ci_page = page + 1
+                    st.rerun()
+
+    st.markdown("---")
     st.markdown("*The offline pipeline runs once. The online pipeline uses what was built here — every query, every time.*")
 
     st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
