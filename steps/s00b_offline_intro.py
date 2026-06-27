@@ -1,7 +1,7 @@
 """Step 0b — Offline pipeline intro: diagram + table before diving into steps."""
 import streamlit as st
 import os
-from state import go_to
+from state import go_to, go_back
 
 STEPS_TABLE = [
     {
@@ -125,6 +125,11 @@ line-height:1.6;font-style:italic;border-left:3px solid #0F6E56">
 
     st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
-    if st.button("Let's dive in — Step 1: Document Ingestion →",
-                 type="primary", use_container_width=True):
-        go_to("s01_ingestion")
+    col1, col2 = st.columns([1, 3])
+    with col1:
+        if st.button("← Back", use_container_width=True):
+            go_back()
+    with col2:
+        if st.button("Let's dive in — Step 1: Document Ingestion →",
+                     type="primary", use_container_width=True):
+            go_to("s01_ingestion")
