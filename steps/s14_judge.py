@@ -170,6 +170,62 @@ Used in production at Spotify, NVIDIA, Databricks, and most enterprise AI teams.
 
     st.markdown("")
 
+    # ── Offline vs Online vs Golden Dataset ───────────────────────────────────
+    st.markdown("**Three evaluation modes every PM must understand**")
+    col_off, col_on, col_gold = st.columns(3)
+
+    with col_off:
+        st.markdown("""
+<div style="background:var(--color-background-secondary);border-top:3px solid #1D9E75;
+border-radius:0 0 8px 8px;padding:14px;height:100%">
+<div style="font-size:13px;font-weight:700;color:#1D9E75;margin-bottom:8px">🏋️ Offline Evaluation</div>
+<div style="font-size:12px;color:var(--color-text-secondary);line-height:1.7">
+Run <strong>before deploying any change</strong> — new chunking strategy, different top-k, model upgrade, prompt edit.<br><br>
+You run your golden dataset through the new pipeline and compare RAGAS scores to the previous version.<br><br>
+Answers: <em>"Is this version better or worse than what's live?"</em><br><br>
+Think of it as <strong>unit tests for your RAG pipeline</strong> — catches regressions before users see them.
+</div>
+</div>
+""", unsafe_allow_html=True)
+
+    with col_on:
+        st.markdown("""
+<div style="background:var(--color-background-secondary);border-top:3px solid #0A84FF;
+border-radius:0 0 8px 8px;padding:14px;height:100%">
+<div style="font-size:13px;font-weight:700;color:#0A84FF;margin-bottom:8px">📡 Online Evaluation</div>
+<div style="font-size:12px;color:var(--color-text-secondary);line-height:1.7">
+Runs <strong>in production on real user queries</strong> — continuously, after you've shipped.<br><br>
+You sample 5–10% of live traffic and run RAGAS on those queries. Too expensive to run on everything.<br><br>
+Signals to watch: RAGAS score trend week-over-week, thumbs up/down from users, query retry rate (user asked again = bad answer), latency drift.<br><br>
+Answers: <em>"Is quality degrading as our knowledge base ages?"</em>
+</div>
+</div>
+""", unsafe_allow_html=True)
+
+    with col_gold:
+        st.markdown("""
+<div style="background:var(--color-background-secondary);border-top:3px solid #FF9500;
+border-radius:0 0 8px 8px;padding:14px;height:100%">
+<div style="font-size:13px;font-weight:700;color:#FF9500;margin-bottom:8px">🎯 Golden Dataset</div>
+<div style="font-size:12px;color:var(--color-text-secondary);line-height:1.7">
+A curated set of <strong>100–200 real user questions</strong> with expert-validated ideal answers.<br><br>
+This is your ground truth. Every offline evaluation runs against this set. Without it, you have no baseline — a score of 0.85 means nothing if you don't know what 0.85 compares to.<br><br>
+Built from: real user query logs, validated by domain experts, refreshed quarterly.<br><br>
+<strong>PM owns this.</strong> Engineering builds the pipeline. PM owns the definition of "correct."
+</div>
+</div>
+""", unsafe_allow_html=True)
+
+    st.markdown("")
+    st.markdown("""
+<div style="background:var(--color-background-secondary);border-left:3px solid #BA7517;
+border-radius:0 8px 8px 0;padding:12px 14px;font-size:12px;color:var(--color-text-secondary);line-height:1.6">
+⚠️ <strong>What this step demos vs what production does:</strong> Right now we're running RAGAS on a single live query you just typed — this is useful for learning but not how production evaluation works. Real evaluation runs your golden dataset (hundreds of queries) through the pipeline offline before every release, then samples production traffic online to catch degradation over time.
+</div>
+""", unsafe_allow_html=True)
+
+    st.markdown("---")
+
     # ── 5 metrics grid ────────────────────────────────────────────────────────
     cols = st.columns(5)
     metric_colors = ["#4285F4", "#1D9E75", "#BA7517", "#9B59B6", "#E24B4A"]
@@ -591,6 +647,14 @@ SAME MODEL EVALUATING ITSELF: {gen_model == judge_model}"""
             "A fintech PM presented RAGAS scores in a quarterly business review — CFO asked what faithfulness meant, PM explained the technical definition, CFO disengaged, no budget was allocated to fix a pipeline that was generating ungrounded answers in customer facing financial summaries.",
             "RAGAS scores shown with explanations per metric and PM recommendations generated per run — no stakeholder translation layer mapping scores to business risk language for non-technical audiences.",
             "PM owns a one-page RAGAS business translation doc — faithfulness becomes answer accuracy risk, context recall becomes knowledge gap risk, answer relevancy becomes user experience risk, context precision becomes noise and cost risk, updated before every stakeholder review.",
+        ),
+        (
+            "Offline vs online evaluation — what's your cadence?",
+            "Do you know the difference between evaluating before a change ships (offline) and monitoring quality after it ships (online) — and have you decided how often to run each?",
+            "Define your evaluation cadence before launch — offline evaluation before every pipeline change, online evaluation sampled continuously in production. Document who reviews results and how fast findings become roadmap items.",
+            "A B2B SaaS company ran RAGAS evaluations only when users complained — by the time a faithfulness degradation was caught, it had been live for 11 weeks and affected 3 enterprise accounts. An offline evaluation before the KB refresh that caused it would have caught it in 20 minutes.",
+            "This app runs RAGAS on a single live query per session — no offline evaluation against a golden dataset, no production sampling cadence. Useful for learning the mechanics; not representative of how production evaluation works.",
+            "PM defines and owns the evaluation cadence — offline evaluation required before every pipeline change with sign-off gate, online evaluation runs on 5-10% of production traffic daily, weekly score review by PM, monthly golden dataset refresh reviewed by domain expert.",
         ),
         (
             "How does RAGAS connect to your roadmap?",
