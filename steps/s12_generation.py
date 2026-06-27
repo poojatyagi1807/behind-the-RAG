@@ -2,7 +2,7 @@
 import streamlit as st
 import time
 from ui import (render_topbar, render_step_header, render_thinking_card,
-                render_what_we_built, render_enterprise_note, render_risk_table, render_nav, render_pm_matrix)
+                render_what_we_built, render_enterprise_note, render_risk_table, render_nav, render_pm_matrix, render_key_takeaway)
 from state import store_result, get_result, get_llm_client, has_llm_key, LLM_MODELS
 
 SYSTEM_PROMPT = """You are a RAG assistant for the "Behind The RAG" educational app. You answer questions about RAG pipelines, LLMs, embeddings, vector search, chunking, evaluation, and related AI/ML topics ONLY.
@@ -317,4 +317,5 @@ Switch provider in the sidebar if you'd like to use a different LLM.
         "90% less and return 5x faster. At scale this is significant."
     )
     render_risk_table(RISKS)
+    render_key_takeaway("The LLM is the last step, not the only step. Every layer before generation — retrieval, re-ranking, ordering, assembly — determines what the LLM has to work with. A great LLM on poor context produces poor answers. A smaller LLM on excellent context often outperforms it.", pipeline="online")
     render_nav(next_label="Next: Evaluation I — Grounding →", pipeline="online", show_jump=True)

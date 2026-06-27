@@ -1,7 +1,7 @@
 """Step 2 — Chunking."""
 import streamlit as st
 from ui import (render_topbar, render_step_header, render_thinking_card,
-                render_what_we_built, render_enterprise_note, render_risk_table, render_nav)
+                render_what_we_built, render_enterprise_note, render_risk_table, render_nav, render_key_takeaway)
 
 SAMPLE_PARAGRAPH = """Large pre-trained language models have been shown to store factual knowledge in their parameters. However, their ability to access and precisely manipulate knowledge is still limited. We explore retrieval-augmented generation — models which combine pre-trained parametric and non-parametric memory. The non-parametric memory is a dense vector index of Wikipedia, accessed with a pre-trained neural retriever."""
 
@@ -273,4 +273,5 @@ border-left:3px solid {data['color']}40">
         "benchmarks across chunk sizes before choosing."
     )
     render_risk_table(RISKS)
+    render_key_takeaway("Chunk size is one of the highest-leverage decisions in RAG. Too large and retrieved chunks contain noise that confuses the LLM. Too small and you lose context. The right size depends on your document type, query patterns, and context window budget.", pipeline="offline")
     render_nav(next_label="Next: Metadata Tagging →", pipeline="offline")

@@ -2,7 +2,7 @@
 import streamlit as st
 import plotly.graph_objects as go
 from ui import (render_topbar, render_step_header, render_thinking_card,
-                render_what_we_built, render_enterprise_note, render_risk_table, render_nav, render_pm_matrix)
+                render_what_we_built, render_enterprise_note, render_risk_table, render_nav, render_pm_matrix, render_key_takeaway)
 from state import store_result, get_result
 
 RISKS = [
@@ -284,4 +284,5 @@ def render():
         "LLM and should be empirically validated on your own query set."
     )
     render_risk_table(RISKS)
+    render_key_takeaway("Order matters as much as content. LLMs pay more attention to the beginning and end of their context window. Putting your best chunks first and second-best last — and burying weaker chunks in the middle — measurably improves answer quality without changing what you retrieved.", pipeline="online")
     render_nav(next_label="Next: Context Assembly →", pipeline="online", show_jump=True)

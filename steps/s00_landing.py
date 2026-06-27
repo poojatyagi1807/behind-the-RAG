@@ -11,6 +11,9 @@ def render():
   <div style="font-size:15px;color:var(--color-text-tertiary)">
     A visual walkthrough of how enterprise RAG systems actually work.
   </div>
+  <div style="font-size:12px;color:var(--color-text-tertiary);margin-top:8px">
+    ⏱ ~45 minutes &nbsp;·&nbsp; 15 steps &nbsp;·&nbsp; 2 pipelines
+  </div>
 </div>
 """, unsafe_allow_html=True)
 

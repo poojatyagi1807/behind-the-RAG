@@ -1,7 +1,7 @@
 """Step 2 — Parsing and Cleaning."""
 import streamlit as st
 from ui import (render_topbar, render_step_header, render_thinking_card,
-                render_what_we_built, render_enterprise_note, render_risk_table, render_nav)
+                render_what_we_built, render_enterprise_note, render_risk_table, render_nav, render_key_takeaway)
 
 RAW_INPUT = """\
 RESULTS — Open Domain QA Performance
@@ -250,4 +250,5 @@ padding:10px 14px;margin-bottom:8px;font-size:12px;font-weight:600;color:#085041
         "PII scan, duplicate detection. Chunks below quality threshold are quarantined for human review."
     )
     render_risk_table(RISKS)
+    render_key_takeaway("Parsing is not cleaning — it is structure preservation. An enterprise parser treats a table as data, an image as a description, and prose as prose. A naive parser turns all three into one undifferentiated blob the LLM cannot reason over.", pipeline="offline")
     render_nav(next_label="Next: Chunking →", pipeline="offline")

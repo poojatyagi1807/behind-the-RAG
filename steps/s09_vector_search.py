@@ -5,7 +5,7 @@ from collections import Counter
 import streamlit as st
 import plotly.graph_objects as go
 from ui import (render_topbar, render_step_header, render_thinking_card,
-                render_what_we_built, render_enterprise_note, render_risk_table, render_nav, render_pm_matrix)
+                render_what_we_built, render_enterprise_note, render_risk_table, render_nav, render_pm_matrix, render_key_takeaway)
 from state import store_result, get_result
 from knowledge_base.kb import tfidf_query_vector, cosine_similarity, Chunk
 
@@ -545,4 +545,5 @@ def render():
         "At enterprise scale, query embedding caching reduces API calls by 40-60% on repeated queries."
     )
     render_risk_table(RISKS)
+    render_key_takeaway("Hybrid search wins in production because dense and sparse retrieval are complementary. Dense finds semantic matches; BM25 finds exact terms. A query about a specific product number needs BM25. A question about 'feeling overwhelmed' needs dense. RRF merges both without requiring you to tune weights.", pipeline="online")
     render_nav(next_label="Next: Re-ranking →", pipeline="online", show_jump=True)

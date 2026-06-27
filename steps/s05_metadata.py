@@ -1,7 +1,7 @@
 """Step 3 — Metadata Tagging."""
 import streamlit as st
 from ui import (render_topbar, render_step_header, render_thinking_card,
-                render_what_we_built, render_enterprise_note, render_risk_table, render_nav, render_pm_matrix)
+                render_what_we_built, render_enterprise_note, render_risk_table, render_nav, render_pm_matrix, render_key_takeaway)
 from config.content import METADATA_SCHEMA
 
 FILTER_EXAMPLES = {
@@ -353,4 +353,5 @@ treat the chunk as stale.
         "Azure Cognitive Services do this at scale without manual labeling."
     )
     render_risk_table(RISKS)
+    render_key_takeaway("Metadata is the difference between retrieval and precision retrieval. Vector similarity finds semantically close chunks. Metadata filters find the right chunks for the right user at the right time. ACL, freshness, and document type are the three fields that matter most in production.", pipeline="offline")
     render_nav(next_label="Next: Embedding →", pipeline="offline", back=True)

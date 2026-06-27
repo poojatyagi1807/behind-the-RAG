@@ -3,7 +3,7 @@ import streamlit as st
 import json
 import time
 from ui import (render_topbar, render_step_header, render_thinking_card,
-                render_what_we_built, render_enterprise_note, render_risk_table, render_nav, render_pm_matrix)
+                render_what_we_built, render_enterprise_note, render_risk_table, render_nav, render_pm_matrix, render_key_takeaway)
 from state import store_result, get_result, has_llm_key, LLM_MODELS
 
 PROVIDER_META = {
@@ -681,4 +681,5 @@ SAME MODEL EVALUATING ITSELF: {gen_model == judge_model}"""
         "Teams that track RAGAS scores weekly catch retrieval degradation (knowledge base going stale) before users do."
     )
     render_risk_table(RISKS)
+    render_key_takeaway("RAGAS gives you a vocabulary for RAG quality that engineering, PM, and leadership can share. Faithfulness drops → generation problem. Context recall drops → retrieval problem. Context precision drops → chunking or re-ranking problem. Each metric points to a specific layer — which is exactly what you need to make roadmap decisions.", pipeline="online")
     render_nav(next_label="Next: Observability →", pipeline="online", show_jump=True)

@@ -173,6 +173,11 @@ with st.sidebar:
             st.rerun()
 
     st.markdown("---")
+    if st.button("📖 Glossary", use_container_width=True):
+        st.session_state.step = "glossary"
+        st.rerun()
+
+    st.markdown("---")
     st.markdown("**About**")
     st.markdown("""
 Part of the [Behind The Series](https://github.com/poojatyagi1807).
@@ -242,6 +247,9 @@ elif step == "s14_judge":
 
 elif step == "s15_observability":
     from steps.s15_observability import render; render()
+
+elif step == "glossary":
+    from steps.s_glossary import render; render()
 
 else:
     st.error(f"Unknown step: {step}")

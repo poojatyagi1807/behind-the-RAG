@@ -1,7 +1,7 @@
 """Step 11a — Context Assembly (runs after ordering)."""
 import streamlit as st
 from ui import (render_topbar, render_step_header, render_thinking_card,
-                render_what_we_built, render_enterprise_note, render_risk_table, render_nav, render_pm_matrix)
+                render_what_we_built, render_enterprise_note, render_risk_table, render_nav, render_pm_matrix, render_key_takeaway)
 from state import store_result, get_result
 
 RISKS = [
@@ -212,4 +212,5 @@ border-radius:10px;padding:14px">
         "kept verbatim, older turns compressed to summaries."
     )
     render_risk_table(RISKS)
+    render_key_takeaway("The context window is a budget. Every token you spend on a weak chunk is a token you cannot spend on a strong one. Assembly is the last chance to improve answer quality before generation — token limits, deduplication, and chunk quality thresholds all happen here.", pipeline="online")
     render_nav(next_label="Next: Generation →", pipeline="online", show_jump=True)

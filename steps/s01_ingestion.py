@@ -2,7 +2,7 @@
 import streamlit as st
 from ui import (render_topbar, render_step_header, render_thinking_card,
                 render_what_we_built, render_enterprise_note, render_risk_table, render_nav,
-                render_pm_matrix)
+                render_pm_matrix, render_key_takeaway)
 from config.content import LOADER_COMPARISON
 from knowledge_base.kb import DOCUMENTS
 
@@ -407,4 +407,5 @@ padding:10px 14px;margin-bottom:8px;font-size:12px;font-weight:600;color:#085041
         "only changed documents are reprocessed, not the full corpus."
     )
     render_risk_table(RISKS)
+    render_key_takeaway("What you ingest determines what you can retrieve. Garbage in, garbage out is not a metaphor — if your document pipeline drops tables, flattens structure, or ingests outdated files, no amount of downstream tuning will fix your answers.", pipeline="offline")
     render_nav(back=False, next_label="Next: Chunking →", pipeline="offline")

@@ -4,7 +4,7 @@ import streamlit as st
 import plotly.graph_objects as go
 from ui import (render_topbar, render_step_header, render_thinking_card,
                 render_what_we_built, render_enterprise_note, render_risk_table,
-                render_nav, render_pm_matrix)
+                render_nav, render_pm_matrix, render_key_takeaway)
 from config.content import EMBEDDING_COMPARISON
 from state import embed_text
 
@@ -252,4 +252,5 @@ def render():
         "SageMaker Model Registry track which model version was used to index each corpus."
     )
     render_risk_table(RISKS)
+    render_key_takeaway("Embedding model choice locks in your retrieval ceiling. A weak model produces vectors where 'password reset' and 'login help' look different — your system will miss relevant chunks forever unless you re-embed the entire knowledge base.", pipeline="offline")
     render_nav(next_label="Next: Indexing →", pipeline="offline")

@@ -2,7 +2,7 @@
 import streamlit as st
 import streamlit.components.v1 as components
 from ui import (render_topbar, render_step_header, render_thinking_card,
-                render_what_we_built, render_enterprise_note, render_risk_table, render_nav, render_pm_matrix)
+                render_what_we_built, render_enterprise_note, render_risk_table, render_nav, render_pm_matrix, render_key_takeaway)
 from config.content import INDEX_COMPARISON
 
 RISKS = [
@@ -357,4 +357,5 @@ Neither replaces the other.
     render_risk_table(RISKS)
 
     st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+    render_key_takeaway("The index is not storage — it is the search engine. HNSW makes approximate nearest-neighbour search fast at scale. Without it, every query would scan every chunk. Index configuration choices (M, ef_construction) trade off speed against accuracy and memory.", pipeline="offline")
     render_nav(next_label="Next: Pipeline Summary →", pipeline="offline")
