@@ -324,6 +324,59 @@ Est. cost:          ~${max(gen_latency * 0.0000015, 0.001):.4f}""", language=Non
     )
     render_risk_table(RISKS)
 
+    # ── PM Decision Matrix ────────────────────────────────────────────────────
+    rows_data = [
+        (
+            "What does healthy look like?",
+            "Have you defined baseline metrics for latency, retrieval success rate, answer quality, and user satisfaction before a single alert is configured — or will you only know something is wrong when users complain?",
+            "Define a health baseline document before launch — measure each metric for 2 weeks post launch to establish baseline, then set alert thresholds at 15% degradation from baseline.",
+            "A fintech RAG launched with no health baseline — when retrieval latency doubled 6 weeks post launch engineering argued it was always slow, PM had no baseline to prove otherwise, SLA breach went unresolved for 3 months.",
+            "Health baselines shown as static demo values in the daily dashboard tab — query volume ~13k, retrieval latency ~90ms, faithfulness avg 0.88. These are illustrative, not measured from real traffic. No formal baseline document or alert thresholds defined.",
+            "Health baseline document owned by PM — latency p50 and p95, retrieval success rate, grounding score, user satisfaction score, and session completion rate measured for 2 weeks post launch, alert thresholds set at 15% degradation, reviewed monthly.",
+        ),
+        (
+            "What gets logged and who owns the logs?",
+            "Do you know which pipeline steps are being logged, where those logs live, who has access to them, and how long they are retained — or did engineering make all those decisions without PM input?",
+            "Define a minimum viable logging spec before build — log original query, expanded query, retrieved chunks with scores, context assembly output, final answer, grounding score, and user feedback signal at minimum.",
+            "Intercom discovered during a compliance audit that their RAG was logging full user queries including personally identifiable information with no retention policy — GDPR violation required emergency log purge and pipeline rebuild, 6 engineer weeks lost.",
+            "A session trace is displayed showing query, retrieval score, token count, grounding, and judge score — educational display only. No actual log storage, no log ownership policy, and no PII handling or retention rules defined.",
+            "Logging spec owned jointly by PM and legal — defines which pipeline steps are logged, what data is captured per step, PII handling policy, retention period per data type, access controls, and log review cadence before pipeline goes to production.",
+        ),
+        (
+            "Who gets alerted and when?",
+            "When your faithfulness score drops below threshold at 2am on a Sunday, does the right person find out immediately or does it sit in a dashboard until someone checks it Monday morning?",
+            "Define an alert routing matrix before launch — map each alert type to a named owner, severity level, response SLA, and escalation path.",
+            "A healthcare RAG had all alerts routed to the engineering on-call — a sustained grounding score drop over a weekend was triaged as low priority infrastructure noise, clinical PM discovered it Monday morning after 3 patient facing sessions had already used the degraded pipeline.",
+            "No alert routing — the static daily dashboard shows status indicators (Normal/Watch) but there is no live alerting system, no named owners per alert type, and no escalation path.",
+            "Alert routing matrix owned by PM — latency alerts route to engineering on-call, grounding and faithfulness alerts route to PM and domain expert, user satisfaction drop alerts route to PM and product leadership, severity levels and response SLAs defined per alert type.",
+        ),
+        (
+            "How do you separate pipeline failures from content failures?",
+            "When answer quality drops, do you know within 30 minutes whether it is a retrieval problem, a chunking problem, a generation problem, or a content staleness problem — or does debugging take days?",
+            "Build a failure taxonomy before launch — define the distinguishing signals for each failure type so triage is fast and escalation goes to the right team immediately.",
+            "Glean spent 2 weeks debugging a quality degradation that turned out to be a content staleness problem misidentified as a retrieval failure — engineering optimized vector search indexes while the real issue was a Confluence sync that had silently stopped running 3 weeks earlier.",
+            "Three drift failure types documented with distinguishing signals — embedding drift, data drift, and query drift — each with what it looks like, what observability catches, and how to fix it. No formal triage runbook or named team assignment per failure type.",
+            "Failure taxonomy document owned by PM — pipeline failures mapped to distinguishing signals, triage runbook defined per failure type, each failure type assigned to a named team owner, runbook tested in a simulated failure exercise before launch.",
+        ),
+        (
+            "How do you close the loop from user feedback to pipeline fix?",
+            "When a user clicks thumbs down, do you know within 24 hours which pipeline step caused the bad answer and whether a fix is on the roadmap — or does that signal disappear into a feedback database nobody queries?",
+            "Define a user feedback to pipeline fix workflow before launch — thumbs down triggers named investigation, investigation maps to pipeline step, pipeline step owner creates fix ticket within 48 hours.",
+            "Notion AI collected thousands of thumbs down signals in their first month — feedback sat in a database with no review process, PM assumed engineering was analyzing it, engineering assumed PM was triaging it, 6 weeks passed before anyone built the query to look at it.",
+            "No user feedback mechanism — thumbs up/down are not implemented in this app. The feedback loop shown in this step is educational and illustrative, not a live data capture or triage system.",
+            "User feedback workflow owned by PM — thumbs down triggers automated ticket creation, PM reviews aggregate daily, patterns mapped to pipeline steps weekly, fix tickets assigned to named owners within 48 hours of pattern identification, feedback loop closure rate tracked as a PM metric.",
+        ),
+        (
+            "How do you monitor for silent degradation?",
+            "Is your pipeline getting quietly worse week over week in ways that never trigger an alert because each individual drop is too small to cross a threshold but the cumulative drift is destroying user trust?",
+            "Define a weekly trend review process separate from alert monitoring — plot each health metric as a 4 week trend line, flag any metric showing consistent directional movement even if it has not crossed alert threshold.",
+            "A legal tech RAG had stable alert dashboards for 4 months — a PM quarterly review revealed context precision had dropped from 0.91 to 0.74 over 16 weeks in increments too small to trigger weekly alerts, root cause was gradual document staleness that no single alert was designed to catch.",
+            "Weekly trend monitoring demonstrated in the app — the weekly tab shows a 4-week context precision decline with a flag at week 4 illustrating what silent degradation looks like. This is educational content; no automated trend monitoring runs against real data.",
+            "Weekly trend review owned by PM — all health metrics plotted as 4 week rolling trends, any metric showing 3 consecutive weeks of directional movement triggers investigation regardless of alert threshold, monthly trend review presented to product leadership with pipeline health narrative.",
+        ),
+    ]
+    render_pm_matrix("Observability", rows_data)
+
     # ── End screen ────────────────────────────────────────────────────────────
     st.markdown("---")
     st.components.v1.html("""
@@ -386,62 +439,6 @@ Est. cost:          ~${max(gen_latency * 0.0000015, 0.001):.4f}""", language=Non
 
 </div>
 """, height=380)
-
-    st.markdown("---")
-
-    # ── PM Decision Matrix ────────────────────────────────────────────────────
-    rows_data = [
-        (
-            "What does healthy look like?",
-            "Have you defined baseline metrics for latency, retrieval success rate, answer quality, and user satisfaction before a single alert is configured — or will you only know something is wrong when users complain?",
-            "Define a health baseline document before launch — measure each metric for 2 weeks post launch to establish baseline, then set alert thresholds at 15% degradation from baseline.",
-            "A fintech RAG launched with no health baseline — when retrieval latency doubled 6 weeks post launch engineering argued it was always slow, PM had no baseline to prove otherwise, SLA breach went unresolved for 3 months.",
-            "Health baselines shown as static demo values in the daily dashboard tab — query volume ~13k, retrieval latency ~90ms, faithfulness avg 0.88. These are illustrative, not measured from real traffic. No formal baseline document or alert thresholds defined.",
-            "Health baseline document owned by PM — latency p50 and p95, retrieval success rate, grounding score, user satisfaction score, and session completion rate measured for 2 weeks post launch, alert thresholds set at 15% degradation, reviewed monthly.",
-        ),
-        (
-            "What gets logged and who owns the logs?",
-            "Do you know which pipeline steps are being logged, where those logs live, who has access to them, and how long they are retained — or did engineering make all those decisions without PM input?",
-            "Define a minimum viable logging spec before build — log original query, expanded query, retrieved chunks with scores, context assembly output, final answer, grounding score, and user feedback signal at minimum.",
-            "Intercom discovered during a compliance audit that their RAG was logging full user queries including personally identifiable information with no retention policy — GDPR violation required emergency log purge and pipeline rebuild, 6 engineer weeks lost.",
-            "A session trace is displayed showing query, retrieval score, token count, grounding, and judge score — educational display only. No actual log storage, no log ownership policy, and no PII handling or retention rules defined.",
-            "Logging spec owned jointly by PM and legal — defines which pipeline steps are logged, what data is captured per step, PII handling policy, retention period per data type, access controls, and log review cadence before pipeline goes to production.",
-        ),
-        (
-            "Who gets alerted and when?",
-            "When your faithfulness score drops below threshold at 2am on a Sunday, does the right person find out immediately or does it sit in a dashboard until someone checks it Monday morning?",
-            "Define an alert routing matrix before launch — map each alert type to a named owner, severity level, response SLA, and escalation path.",
-            "A healthcare RAG had all alerts routed to the engineering on-call — a sustained grounding score drop over a weekend was triaged as low priority infrastructure noise, clinical PM discovered it Monday morning after 3 patient facing sessions had already used the degraded pipeline.",
-            "No alert routing — the static daily dashboard shows status indicators (Normal/Watch) but there is no live alerting system, no named owners per alert type, and no escalation path.",
-            "Alert routing matrix owned by PM — latency alerts route to engineering on-call, grounding and faithfulness alerts route to PM and domain expert, user satisfaction drop alerts route to PM and product leadership, severity levels and response SLAs defined per alert type.",
-        ),
-        (
-            "How do you separate pipeline failures from content failures?",
-            "When answer quality drops, do you know within 30 minutes whether it is a retrieval problem, a chunking problem, a generation problem, or a content staleness problem — or does debugging take days?",
-            "Build a failure taxonomy before launch — define the distinguishing signals for each failure type so triage is fast and escalation goes to the right team immediately.",
-            "Glean spent 2 weeks debugging a quality degradation that turned out to be a content staleness problem misidentified as a retrieval failure — engineering optimized vector search indexes while the real issue was a Confluence sync that had silently stopped running 3 weeks earlier.",
-            "Three drift failure types documented with distinguishing signals — embedding drift, data drift, and query drift — each with what it looks like, what observability catches, and how to fix it. No formal triage runbook or named team assignment per failure type.",
-            "Failure taxonomy document owned by PM — pipeline failures mapped to distinguishing signals, triage runbook defined per failure type, each failure type assigned to a named team owner, runbook tested in a simulated failure exercise before launch.",
-        ),
-        (
-            "How do you close the loop from user feedback to pipeline fix?",
-            "When a user clicks thumbs down, do you know within 24 hours which pipeline step caused the bad answer and whether a fix is on the roadmap — or does that signal disappear into a feedback database nobody queries?",
-            "Define a user feedback to pipeline fix workflow before launch — thumbs down triggers named investigation, investigation maps to pipeline step, pipeline step owner creates fix ticket within 48 hours.",
-            "Notion AI collected thousands of thumbs down signals in their first month — feedback sat in a database with no review process, PM assumed engineering was analyzing it, engineering assumed PM was triaging it, 6 weeks passed before anyone built the query to look at it.",
-            "No user feedback mechanism — thumbs up/down are not implemented in this app. The feedback loop shown in this step is educational and illustrative, not a live data capture or triage system.",
-            "User feedback workflow owned by PM — thumbs down triggers automated ticket creation, PM reviews aggregate daily, patterns mapped to pipeline steps weekly, fix tickets assigned to named owners within 48 hours of pattern identification, feedback loop closure rate tracked as a PM metric.",
-        ),
-        (
-            "How do you monitor for silent degradation?",
-            "Is your pipeline getting quietly worse week over week in ways that never trigger an alert because each individual drop is too small to cross a threshold but the cumulative drift is destroying user trust?",
-            "Define a weekly trend review process separate from alert monitoring — plot each health metric as a 4 week trend line, flag any metric showing consistent directional movement even if it has not crossed alert threshold.",
-            "A legal tech RAG had stable alert dashboards for 4 months — a PM quarterly review revealed context precision had dropped from 0.91 to 0.74 over 16 weeks in increments too small to trigger weekly alerts, root cause was gradual document staleness that no single alert was designed to catch.",
-            "Weekly trend monitoring demonstrated in the app — the weekly tab shows a 4-week context precision decline with a flag at week 4 illustrating what silent degradation looks like. This is educational content; no automated trend monitoring runs against real data.",
-            "Weekly trend review owned by PM — all health metrics plotted as 4 week rolling trends, any metric showing 3 consecutive weeks of directional movement triggers investigation regardless of alert threshold, monthly trend review presented to product leadership with pipeline health narrative.",
-        ),
-    ]
-
-    render_pm_matrix("Observability", rows_data)
 
     st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
 
