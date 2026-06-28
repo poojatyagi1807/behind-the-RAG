@@ -407,4 +407,4 @@ padding:10px 14px;margin-bottom:8px;font-size:12px;font-weight:600;color:#085041
         "only changed documents are reprocessed, not the full corpus."
     )
     render_risk_table(RISKS)
-    render_nav(back=False, next_label="Next: Chunking →", pipeline="offline")
+    render_nav(next_label="Next: Chunking →", pipeline="offline")
