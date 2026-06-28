@@ -44,9 +44,9 @@ STEPS_TABLE = [
 def render():
     st.markdown("""
 <div style="margin-bottom:20px">
-  <div style="font-size:22px;font-weight:500;color:var(--color-text-primary);
+  <div style="font-size:22px;font-weight:700;color:#ffffff;
   margin-bottom:6px">📦 Offline Pipeline — What you are about to build</div>
-  <div style="font-size:13px;color:var(--color-text-tertiary)">
+  <div style="font-size:13px;color:var(--color-text-secondary)">
     Five steps. Runs once. Every query that follows lives or dies by the
     decisions made here.
   </div>
