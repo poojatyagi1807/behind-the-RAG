@@ -345,6 +345,20 @@ def render():
             "'What is RAG?' · 'How does chunking work?' · 'What is HNSW?' — all returned results",
             "Enterprise: golden dataset of 50+ queries run against index — min recall@5 = 0.85 required")
 
+        # Content type integrity check
+        table_handling = "text-only (pipe characters preserved)" if chunks_with_tables > 0 else "none detected"
+        img_handling = "not extracted (plain text loader)"
+        rows += check_row(
+            "🖼️", "Structured content integrity",
+            f"{chunks_with_tables} chunks with tables · 0 image chunks",
+            "warn",
+            f"Tables: chunked as plain text — pipe characters preserved but not structured as JSON rows/headers. "
+            f"Images: skipped entirely — no vision model, no alt-text, not embedded.",
+            "Enterprise: AWS Textract extracts tables as JSON (headers + rows, chunked separately). "
+            "Images passed to GPT-4V / Claude Vision — description generated and embedded as a separate chunk. "
+            "Both content types verified to return results in retrieval tests before promotion."
+        )
+
         st.markdown(f"""
 <table style="width:100%;border-collapse:collapse;font-size:12px;border:1px solid rgba(255,255,255,0.12);border-radius:8px;overflow:hidden">
   <thead>
