@@ -2,7 +2,7 @@
 import streamlit as st
 import re
 from ui import (render_topbar, render_step_header, render_thinking_card,
-                render_what_we_built, render_enterprise_note, render_risk_table, render_nav, render_pm_matrix, render_key_takeaway)
+                render_what_we_built, render_enterprise_note, render_risk_table, render_nav, render_pm_matrix)
 from state import store_result, get_result
 
 RISKS = [
@@ -322,5 +322,4 @@ def render():
         "traceability of AI-generated claims to source documents."
     )
     render_risk_table(RISKS)
-    render_key_takeaway("Grounding is your real-time quality gate on every response. Rule-based grounding is fast and free — it catches clear hallucinations before they reach the user. It cannot catch subtle paraphrasing, which is why RAGAS LLM-as-Judge runs on a sample as a deeper audit.", pipeline="online")
     render_nav(next_label="Next: Evaluation II — RAGAS →", pipeline="online", show_jump=True)

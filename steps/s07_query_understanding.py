@@ -718,8 +718,7 @@ def render():
     )
     render_risk_table(RISKS)
     if results.get("hyde"):
-        render_key_takeaway("Users rarely ask the perfect retrieval query. HyDE closes the gap — by generating a hypothetical answer first, we create a richer embedding that retrieves chunks even a well-phrased query would miss. Query understanding is where RAG quality is won or lost before retrieval even starts.", pipeline="online")
-        render_nav(next_label="Next: Query Embedding →", pipeline="online", show_jump=True)
+            render_nav(next_label="Next: Query Embedding →", pipeline="online", show_jump=True)
     else:
         st.info(
             "🔑 **Add an LLM key to continue.**\n\n"

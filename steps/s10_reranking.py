@@ -302,5 +302,4 @@ Only feasible for top-K.""", language=None)
         "extremely fast cross-encoder that runs locally with competitive accuracy."
     )
     render_risk_table(RISKS)
-    render_key_takeaway("First-pass retrieval optimises for speed, not precision. Re-ranking optimises for precision on a small candidate set. The Cohere cross-encoder reads query and chunk together — it understands relevance, not just similarity. The two-stage approach gives you the best of both: speed at scale, accuracy in the final context.", pipeline="online")
     render_nav(next_label="Next: Context Ordering →", pipeline="online", show_jump=True)

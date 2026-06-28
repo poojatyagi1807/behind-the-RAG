@@ -249,15 +249,15 @@ def render():
     st.markdown("---")
 
     # ── Chunk Inspector ───────────────────────────────────────────────────────
-    st.markdown("**🔬 Chunk Inspector — browse what's actually in the index**")
-    st.caption("Every answer the online pipeline gives comes from one of these chunks. This is what retrieval searches through.")
+    with st.expander("🔬 Chunk Inspector — browse what's actually in the index", expanded=False):
+      st.caption("Every answer the online pipeline gives comes from one of these chunks. This is what retrieval searches through.")
 
-    if not st.session_state.get("kb_loaded"):
-        from knowledge_base.loader import load_knowledge_base
-        with st.spinner("Loading knowledge base…"):
-            load_knowledge_base()
+      if not st.session_state.get("kb_loaded"):
+          from knowledge_base.loader import load_knowledge_base
+          with st.spinner("Loading knowledge base…"):
+              load_knowledge_base()
 
-    chunks = st.session_state.get("kb_chunks", [])
+      chunks = st.session_state.get("kb_chunks", [])
 
     if not chunks:
         st.info("Chunks not yet available — complete the offline pipeline first.")

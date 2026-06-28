@@ -2,7 +2,7 @@
 import streamlit as st
 import streamlit.components.v1 as components
 from ui import (render_topbar, render_step_header, render_thinking_card,
-                render_what_we_built, render_enterprise_note, render_risk_table, render_nav, render_pm_matrix, render_key_takeaway)
+                render_what_we_built, render_enterprise_note, render_risk_table, render_nav, render_pm_matrix)
 from config.content import INDEX_COMPARISON
 
 RISKS = [

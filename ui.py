@@ -207,20 +207,6 @@ def render_pm_matrix(title: str, rows: list):
     )
 
 
-def render_key_takeaway(text: str, pipeline: str = "offline"):
-    color = "#0F6E56" if pipeline == "offline" else "#185FA5"
-    st.markdown(f"""
-<div style="background:{color}18;border:1px solid {color}44;border-radius:10px;
-padding:14px 18px;margin:16px 0;display:flex;align-items:flex-start;gap:12px">
-  <div style="font-size:20px;line-height:1">💡</div>
-  <div>
-    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;
-    color:{color};margin-bottom:4px">Key takeaway</div>
-    <div style="font-size:13px;color:var(--color-text-primary);line-height:1.6">{text}</div>
-  </div>
-</div>
-""", unsafe_allow_html=True)
-
 
 def render_error_card(error: str):
     st.markdown(f"""

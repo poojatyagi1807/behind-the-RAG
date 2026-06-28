@@ -187,5 +187,4 @@ Query embedded with Cohere<br><br>
         "At millions of queries per day, 30ms embedding latency adds up — enterprises cache query embeddings."
     )
     render_risk_table(RISKS)
-    render_key_takeaway("The query and all knowledge base chunks must be embedded with the same model. Different models produce incompatible vector spaces — distances between them are meaningless. This is why embedding model upgrades require re-embedding the entire knowledge base.", pipeline="online")
     render_nav(next_label="Next: Vector Search →", pipeline="online", show_jump=True)
