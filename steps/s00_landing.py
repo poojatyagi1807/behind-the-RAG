@@ -1,7 +1,6 @@
 """Step 0 — Landing: Perplexity intro + two pipeline choice."""
 import streamlit as st
 from state import go_to
-from ui import render_pm_matrix
 
 
 def render():
@@ -90,15 +89,45 @@ box-shadow:0 1px 4px rgba(0,0,0,0.06)">
 
         # ── Decision matrix (opened outside narrow col for full width) ─────────
 
-    with st.expander("🤔 Wait — do you actually need RAG? (decision matrix)"):
-        render_pm_matrix("Do You Actually Need RAG?", [
-            ("Retrieval vs Grounding", "Is the model failing because it lacks information, or guidance?", "Try prompt engineering or few-shot examples first — if that fixes it, you don't need RAG.", "A support bot gave wrong refund policy answers. Team built a full RAG pipeline. Root cause was a vague system prompt — a two-line fix would have worked.", "Prompt engineering is near-zero cost. Exhaust this before building retrieval infrastructure.", "Prompt engineering evaluated and documented before RAG scoped. RAG only approved if prompt-only approach fails on >15% of test cases."),
-            ("Build vs Buy", "Do you need control over every layer, or speed to market?", "Evaluate managed RAG APIs (Amazon Bedrock Knowledge Bases, Azure AI Search, Google Vertex AI Search) before committing to a custom build.", "A fintech built a custom RAG pipeline over 4 months. Amazon Bedrock Knowledge Bases would have covered 90% of their needs in 2 weeks. Custom build was justified only by a compliance requirement that emerged in month 3.", "Custom build = high engineering cost and ongoing maintenance. Managed = predictable subscription but less control.", "Build vs buy decision documented with explicit justification. Custom build requires sign-off from engineering lead and PM on why managed solutions are insufficient."),
-            ("RAG vs Fine-tuning", "Is your knowledge dynamic or does it change less than once a month?", "Use RAG for dynamic, frequently updated knowledge. Use fine-tuning to improve model behaviour, tone, or reasoning style — not to inject facts.", "A legal team fine-tuned a model on case law to make it 'know more law.' Model hallucinated confidently on cases outside training data. RAG with retrieval would have surfaced actual case text with citations.", "RAG = ongoing retrieval cost per query. Fine-tuning = one-time training cost but knowledge becomes stale.", "Use case classification required before model approach selected — dynamic knowledge defaults to RAG, behaviour/style changes default to fine-tuning."),
-            ("RAG vs Long Context", "How large is your knowledge base and how often does it change?", "If your KB fits in a context window and changes rarely, long context may be simpler. If it's large, dynamic, or needs citations, build RAG.", "A team stuffed a 200-page policy document into every query context. At $0.01/1k tokens and 10k queries/day, monthly cost was $20k. RAG retrieval of 5 relevant chunks cost $200/month.", "Long context = higher token cost per query, zero infrastructure. RAG = lower per-query cost at scale, higher build cost.", "Cost modelling required before architecture decision — project query volume × token cost for both approaches before committing."),
-            ("Precision vs Simplicity", "Will approximate or occasionally wrong answers break user trust in your domain?", "For internal tools and low-stakes queries, basic semantic search may be sufficient. For customer-facing or compliance use cases, invest in the full pipeline.", "Notion AI shipped a basic semantic search before adding re-ranking and hybrid retrieval. User satisfaction scores were 61%. After adding re-ranking, scores rose to 84%. The incremental complexity was worth it for their use case.", "Full RAG pipeline = highest build and maintenance cost. Basic semantic search = faster to ship, lower quality ceiling.", "Domain risk classification documented before pipeline scope decided — high-stakes domains (legal, medical, financial) default to full pipeline."),
-            ("Own Infra vs Managed", "Do you have bandwidth to maintain vector database infrastructure at scale?", "Start with managed vector DB (Pinecone, Weaviate Cloud, Qdrant Cloud). Move to self-hosted only when cost or compliance requires it.", "A startup self-hosted Weaviate to save $200/month. Spent 3 engineer-weeks on cluster maintenance in the first quarter — opportunity cost far exceeded the savings.", "Self-hosted = engineering overhead and on-call burden. Managed = predictable subscription, faster to scale.", "Infrastructure decision reviewed at 6-month intervals — self-hosting only approved when managed cost exceeds $5k/month or compliance blocks cloud storage."),
-        ])
+    with st.expander("🤔 Wait — do you actually need RAG?"):
+        st.markdown("""
+<table style="width:100%;border-collapse:collapse;font-size:12px">
+  <thead>
+    <tr style="background:#1a2636">
+      <th style="padding:10px 14px;text-align:left;color:#fff;width:30%">Situation</th>
+      <th style="padding:10px 14px;text-align:left;color:#30D158;width:35%">✅ Use RAG</th>
+      <th style="padding:10px 14px;text-align:left;color:#FF453A;width:35%">❌ Don't use RAG (yet)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="background:var(--color-background-secondary)">
+      <td style="padding:10px 14px;font-weight:600;color:var(--color-text-primary);border-bottom:1px solid rgba(255,255,255,0.08)">Your knowledge changes frequently</td>
+      <td style="padding:10px 14px;color:var(--color-text-secondary);border-bottom:1px solid rgba(255,255,255,0.08)">Knowledge base updates weekly or more — RAG retrieves fresh content every query</td>
+      <td style="padding:10px 14px;color:var(--color-text-secondary);border-bottom:1px solid rgba(255,255,255,0.08)">Knowledge is static and small — just stuff it in the system prompt</td>
+    </tr>
+    <tr style="background:var(--color-background-primary)">
+      <td style="padding:10px 14px;font-weight:600;color:var(--color-text-primary);border-bottom:1px solid rgba(255,255,255,0.08)">You need citations and grounding</td>
+      <td style="padding:10px 14px;color:var(--color-text-secondary);border-bottom:1px solid rgba(255,255,255,0.08)">Users need to verify sources — RAG surfaces the exact chunk the answer came from</td>
+      <td style="padding:10px 14px;color:var(--color-text-secondary);border-bottom:1px solid rgba(255,255,255,0.08)">A confident answer is enough — try prompt engineering first, it's free</td>
+    </tr>
+    <tr style="background:var(--color-background-secondary)">
+      <td style="padding:10px 14px;font-weight:600;color:var(--color-text-primary);border-bottom:1px solid rgba(255,255,255,0.08)">Your KB is large</td>
+      <td style="padding:10px 14px;color:var(--color-text-secondary);border-bottom:1px solid rgba(255,255,255,0.08)">Thousands of documents — too much to fit in any context window, retrieval is the only option</td>
+      <td style="padding:10px 14px;color:var(--color-text-secondary);border-bottom:1px solid rgba(255,255,255,0.08)">Under ~50 pages — long context (Gemini 1M, Claude 200k) may be simpler and cheaper</td>
+    </tr>
+    <tr style="background:var(--color-background-primary)">
+      <td style="padding:10px 14px;font-weight:600;color:var(--color-text-primary);border-bottom:1px solid rgba(255,255,255,0.08)">Hallucination is a risk</td>
+      <td style="padding:10px 14px;color:var(--color-text-secondary);border-bottom:1px solid rgba(255,255,255,0.08)">Legal, medical, financial, or compliance use cases — wrong answers have real consequences</td>
+      <td style="padding:10px 14px;color:var(--color-text-secondary);border-bottom:1px solid rgba(255,255,255,0.08)">Creative or exploratory tasks where approximate answers are fine</td>
+    </tr>
+    <tr style="background:var(--color-background-secondary)">
+      <td style="padding:10px 14px;font-weight:600;color:var(--color-text-primary)">Model behaviour vs facts</td>
+      <td style="padding:10px 14px;color:var(--color-text-secondary)">Model needs external facts it wasn't trained on — RAG injects them at query time</td>
+      <td style="padding:10px 14px;color:var(--color-text-secondary)">Model needs to behave differently (tone, format, reasoning style) — use fine-tuning instead</td>
+    </tr>
+  </tbody>
+</table>
+""", unsafe_allow_html=True)
 
     st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
