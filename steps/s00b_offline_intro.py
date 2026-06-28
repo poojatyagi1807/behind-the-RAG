@@ -2,6 +2,7 @@
 import streamlit as st
 import os
 from state import go_to, go_back
+from ui import render_topbar
 
 STEPS_TABLE = [
     {
@@ -42,6 +43,7 @@ STEPS_TABLE = [
 ]
 
 def render():
+    render_topbar()
     st.markdown("""
 <div style="margin-bottom:20px">
   <div style="font-size:22px;font-weight:700;color:#ffffff;
