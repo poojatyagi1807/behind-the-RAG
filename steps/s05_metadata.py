@@ -66,36 +66,6 @@ def render():
     st.markdown(rows)
 
     st.markdown("---")
-    st.markdown("**Why metadata changes retrieval — same query, different filters:**")
-    st.markdown("*Query: 'what metrics should I use to evaluate RAG?'*")
-
-    selected = st.selectbox(
-        "Apply metadata filter",
-        options=list(FILTER_EXAMPLES.keys()),
-        format_func=lambda k: FILTER_EXAMPLES[k]["label"],
-    )
-
-    example = FILTER_EXAMPLES[selected]
-    for i, result in enumerate(example["results"]):
-        rank_emoji = ["🥇", "🥈", "🥉"][i]
-        st.markdown(f"""
-<div style="display:flex;align-items:center;justify-content:space-between;
-padding:8px 12px;background:var(--color-background-secondary);
-border-radius:8px;margin-bottom:6px">
-  <div>
-    <span style="font-size:13px">{rank_emoji}</span>
-    <span style="font-size:12px;color:var(--color-text-primary);margin-left:6px">
-    {result['chunk']}</span>
-    <span style="font-size:10px;color:var(--color-text-tertiary);margin-left:6px">
-    — {result['doc']}</span>
-  </div>
-  <div style="font-size:12px;font-weight:500;color:#0F6E56">{result['score']:.2f}</div>
-</div>
-""", unsafe_allow_html=True)
-
-    st.caption("Same query. Same vectors. Metadata changes everything about what retrieves.")
-
-    st.markdown("---")
 
     # ── How the system decides which filter to apply ──────────────────────────
     st.markdown("**How the system actually uses metadata — query walkthrough**")
