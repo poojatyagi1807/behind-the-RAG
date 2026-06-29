@@ -1,6 +1,6 @@
 """Step 2 — Chunking."""
 import streamlit as st
-from ui import (render_topbar, render_step_header, render_thinking_card,
+from ui import (render_topbar, render_step_header, render_thinking_card, render_pm_matrix,
                 render_what_we_built, render_enterprise_note, render_risk_table, render_nav)
 
 SAMPLE_PARAGRAPH = """Large pre-trained language models have been shown to store factual knowledge in their parameters. However, their ability to access and precisely manipulate knowledge is still limited. We explore retrieval-augmented generation — models which combine pre-trained parametric and non-parametric memory. The non-parametric memory is a dense vector index of Wikipedia, accessed with a pre-trained neural retriever."""
@@ -199,64 +199,38 @@ border-left:3px solid {data['color']}40">
     st.markdown("---")
 
     # ── PM Decision matrix ────────────────────────────────────────────────────
-    st.markdown("**PM decisions at this step:**")
-    st.markdown(f"""
-<div style="border-radius:8px;overflow:hidden;border:{BORDER};font-family:sans-serif">
-<style>
-.ck-row {{ display:grid;grid-template-columns:14% 18% 22% 22% 12% 12%;width:100%;box-sizing:border-box }}
-.ck-row > div {{ padding:9px 12px;box-sizing:border-box;line-height:1.55;font-size:11px;
-                color:var(--color-text-primary) }}
-</style>
-  <div class="ck-row" style="background:var(--color-background-primary);border-bottom:{BORDER}">
-    <div style="font-weight:700;color:var(--color-text-secondary)">PM Decision</div>
-    <div style="font-weight:700;color:var(--color-text-secondary)">Ask Yourself</div>
-    <div style="font-weight:700;color:var(--color-text-secondary)">Action Item</div>
-    <div style="font-weight:700;color:var(--color-text-secondary)">Real World Example</div>
-    <div style="font-weight:700;color:var(--color-text-secondary)">Behind The RAG</div>
-    <div style="font-weight:700;color:var(--color-text-secondary)">Enterprise Standard</div>
-  </div>
-  <div class="ck-row" style="background:var(--color-background-secondary)">
-    <div style="font-weight:600">What is your user asking?</div>
-    <div style="font-style:italic">Is your user looking for a single fact, a summary, or multi-step reasoning?</div>
-    <div>Define top 5 user query types before deciding chunk strategy</div>
-    <div>Notion's AI gives truncated answers because chunks were optimised for search not summarisation</div>
-    <div>Explanatory queries only — users explore RAG concepts, not factual lookups</div>
-    <div>Run query log analysis on 1000+ real questions, segment by intent before chunking</div>
-  </div>
-  <div class="ck-row" style="background:var(--color-background-primary)">
-    <div style="font-weight:600">How structured is your content?</div>
-    <div style="font-style:italic">Are all your documents consistent in format or wildly mixed?</div>
-    <div>Map content types first — FAQs, contracts, emails, code each need a different strategy</div>
-    <div>Salesforce KB chunked support articles and code docs the same way — code answers came back broken mid-function</div>
-    <div>5 curated public docs, all plain text — single fixed-token strategy works across all</div>
-    <div>Each content type gets its own chunking pipeline with separate config and testing</div>
-  </div>
-  <div class="ck-row" style="background:var(--color-background-secondary)">
-    <div style="font-weight:600">Does chunk boundary affect trust?</div>
-    <div style="font-style:italic">If an answer is cut mid-sentence, does your user lose confidence?</div>
-    <div>Define a boundary rule — chunk at paragraph or section level, never mid-sentence</div>
-    <div>A legal RAG tool returned half a contract clause — lawyers flagged it as unusable immediately</div>
-    <div>400-token budget, 75-token overlap, word-based split — boundaries not sentence-aware</div>
-    <div>Boundary rules defined in a shared config file, reviewed by PM and legal before deployment</div>
-  </div>
-  <div class="ck-row" style="background:var(--color-background-primary)">
-    <div style="font-weight:600">What metadata travels with the chunk?</div>
-    <div style="font-style:italic">Does your user need source, date, author, or section to trust the answer?</div>
-    <div>Decide metadata schema before ingestion — retrofitting it later is expensive</div>
-    <div>ServiceNow's AI showed answers without document dates — agents couldn't tell if the policy was current</div>
-    <div>9 fields: source, doc_type, section, has_code/tables/citations, chunk_position, word_count, indexed_at</div>
-    <div>Schema includes source, author, date, department, access tier — signed off by PM, security, and data governance</div>
-  </div>
-  <div class="ck-row" style="background:var(--color-background-secondary)">
-    <div style="font-weight:600">Who validates chunk quality?</div>
-    <div style="font-style:italic">Can an engineer alone tell if a chunk makes semantic sense in your domain?</div>
-    <div>Assign a domain expert to review sample chunks before pipeline goes to production</div>
-    <div>A healthcare RAG chunked clinical guidelines mid-criteria — doctors got incomplete dosage instructions</div>
-    <div>Self-validated by the builder — curated docs make sense as plain text chunks</div>
-    <div>Subject matter expert assigned per content type with formal sign-off before pipeline moves to production</div>
-  </div>
-</div>
-""", unsafe_allow_html=True)
+    render_pm_matrix("Chunking Strategy", [
+        ("What is your user asking?",
+         "Is your user looking for a single fact, a summary, or multi-step reasoning?",
+         "Define top 5 user query types before deciding chunk strategy.",
+         "Notion's AI gives truncated answers because chunks were optimised for search not summarisation.",
+         "Explanatory queries only — users explore RAG concepts, not factual lookups.",
+         "Run query log analysis on 1000+ real questions, segment by intent before chunking."),
+        ("How structured is your content?",
+         "Are all your documents consistent in format or wildly mixed?",
+         "Map content types first — FAQs, contracts, emails, code each need a different strategy.",
+         "Salesforce KB chunked support articles and code docs the same way — code answers came back broken mid-function.",
+         "5 curated public docs, all plain text — single fixed-token strategy works across all.",
+         "Each content type gets its own chunking pipeline with separate config and testing."),
+        ("Does chunk boundary affect trust?",
+         "If an answer is cut mid-sentence, does your user lose confidence?",
+         "Define a boundary rule — chunk at paragraph or section level, never mid-sentence.",
+         "A legal RAG tool returned half a contract clause — lawyers flagged it as unusable immediately.",
+         "400-token budget, 75-token overlap, word-based split — boundaries not sentence-aware.",
+         "Boundary rules defined in a shared config file, reviewed by PM and legal before deployment."),
+        ("What metadata travels with the chunk?",
+         "Does your user need source, date, author, or section to trust the answer?",
+         "Decide metadata schema before ingestion — retrofitting it later is expensive.",
+         "ServiceNow's AI showed answers without document dates — agents couldn't tell if the policy was current.",
+         "9 fields: source, doc_type, section, has_code/tables/citations, chunk_position, word_count, indexed_at.",
+         "Schema includes source, author, date, department, access tier — signed off by PM, security, and data governance."),
+        ("Who validates chunk quality?",
+         "Can an engineer alone tell if a chunk makes semantic sense in your domain?",
+         "Assign a domain expert to review sample chunks before pipeline goes to production.",
+         "A healthcare RAG chunked clinical guidelines mid-criteria — doctors got incomplete dosage instructions.",
+         "Self-validated by the builder — curated docs make sense as plain text chunks.",
+         "Subject matter expert assigned per content type with formal sign-off before pipeline moves to production."),
+    ])
 
     st.markdown("---")
 
