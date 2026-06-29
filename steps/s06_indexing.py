@@ -385,5 +385,4 @@ Neither replaces the other.
     render_risk_table(RISKS)
 
     st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
-    render_key_takeaway("The index is not storage — it is the search engine. HNSW makes approximate nearest-neighbour search fast at scale. Without it, every query would scan every chunk. Index configuration choices (M, ef_construction) trade off speed against accuracy and memory.", pipeline="offline")
     render_nav(next_label="Next: Pipeline Summary →", pipeline="offline")
