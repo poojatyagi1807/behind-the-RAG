@@ -67,84 +67,99 @@ HNSW_HTML = """
 <body>
 
   <!-- Query -->
-  <div style="background:#2a2a40;border:1px solid #F4845F;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12px;">
+  <div style="background:#2a2a40;border:1px solid #F4845F;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:12px;">
     <span style="color:#F4845F;font-weight:700">Query:</span>
     <span style="color:#fff;margin-left:8px">"What metrics should I use to evaluate RAG?"</span>
-    <span style="color:#888;font-size:10px;margin-left:12px">→ embedded to 384-dim vector · now searching 312 chunks</span>
+    <span style="color:#888;font-size:10px;margin-left:12px">→ embedded to 384-dim vector</span>
   </div>
+
+  <!-- STEP 1: Metadata filter -->
+  <div style="background:rgba(74,144,217,0.10);border:1px solid #4A90D9;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:12px;">
+    <div style="font-weight:700;color:#6AABEA;margin-bottom:6px">① Metadata filter applied first — before HNSW touches anything</div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <div style="background:#1a2636;border:1px solid #4A90D9;border-radius:6px;padding:5px 10px;font-size:11px;color:#fff">
+        312 chunks<br><span style="color:#888;font-size:10px">full index</span>
+      </div>
+      <span style="color:#4A90D9;font-size:18px">→</span>
+      <div style="background:#1a2636;border:1px dashed #4A90D9;border-radius:6px;padding:5px 10px;font-size:11px;color:#888">
+        <span style="text-decoration:line-through">Chunking docs</span><br>
+        <span style="text-decoration:line-through">RAG paper</span><br>
+        <span style="text-decoration:line-through">Lilian Weng</span><br>
+        <span style="text-decoration:line-through">Pinecone guide</span>
+      </div>
+      <span style="color:#4A90D9;font-size:18px">→</span>
+      <div style="background:#1D9E75;border:1px solid #0F6E56;border-radius:6px;padding:5px 10px;font-size:11px;color:#fff">
+        ✅ 45 chunks<br><span style="font-size:10px">RAGAS docs only</span><br>
+        <span style="font-size:10px;color:#a0f0d0">doc_type = evaluation_framework</span>
+      </div>
+      <span style="color:#6AABEA;font-size:10px;max-width:180px">267 chunks excluded instantly — no vector math needed, just a metadata check</span>
+    </div>
+  </div>
+
+  <div style="text-align:center;color:#F4845F;font-size:12px;margin:4px 0;">↓ &nbsp;HNSW now searches only within these 45 filtered chunks</div>
 
   <!-- LAYER 2 -->
   <div class="layer l2">
-    <div class="layer-label">LAYER 2 — Coarse map &nbsp;·&nbsp; 5 cluster centres &nbsp;·&nbsp; long jumps &nbsp;·&nbsp; which topic region?</div>
+    <div class="layer-label">LAYER 2 — Coarse map &nbsp;·&nbsp; 3 topic clusters within RAGAS docs &nbsp;·&nbsp; long jumps</div>
     <div class="nodes" style="flex-wrap:wrap;gap:8px 4px">
-      <div class="node node-entry" title="Entry point">IN</div>
+      <div class="node node-entry">IN</div>
       <span class="edge">→</span>
-      <div class="node node-unvisited" title="Chunking cluster">📄<div class="sub">Chunking</div></div>
+      <div class="node node-unvisited" style="font-size:8px">Setup &amp;<br>Install</div>
       <span class="skip">✗</span>
-      <div class="node node-unvisited" title="Embedding cluster">🧠<div class="sub">Embedding</div></div>
-      <span class="skip">✗</span>
-      <div class="node node-visited" title="Evaluation cluster — closest to query vector">📊<div class="sub">Evaluation ✓</div></div>
+      <div class="node node-visited" style="font-size:8px">Metrics &amp;<br>Scoring ✓</div>
       <span class="skip" style="opacity:0.3">✗</span>
-      <div class="node node-unvisited" title="Retrieval cluster">🔍<div class="sub">Retrieval</div></div>
-      <span class="skip" style="opacity:0.3">✗</span>
-      <div class="node node-unvisited" title="Indexing cluster">🗂️<div class="sub">Indexing</div></div>
-      <span style="color:#72CF90;font-size:10px;margin-left:8px">Evaluation region identified — 3 clusters skipped</span>
+      <div class="node node-unvisited" style="font-size:8px">Pipelines &amp;<br>Integration</div>
+      <span style="color:#72CF90;font-size:10px;margin-left:8px">"Metrics &amp; Scoring" cluster is closest — 2 skipped</span>
     </div>
   </div>
 
-  <div class="drop">↓ &nbsp;Evaluation region found — drop to Layer 1 for finer search</div>
+  <div class="drop">↓ &nbsp;"Metrics &amp; Scoring" cluster found — drop to Layer 1</div>
 
   <!-- LAYER 1 -->
   <div class="layer l1">
-    <div class="layer-label">LAYER 1 — Neighbourhood map &nbsp;·&nbsp; 12 sub-clusters &nbsp;·&nbsp; medium jumps &nbsp;·&nbsp; which document?</div>
+    <div class="layer-label">LAYER 1 — Neighbourhood map &nbsp;·&nbsp; sub-topics within Metrics cluster &nbsp;·&nbsp; medium jumps</div>
     <div class="nodes" style="flex-wrap:wrap;gap:8px 4px">
-      <div class="node node-unvisited" style="font-size:8px">LangChain<br>docs</div>
-      <div class="node node-unvisited" style="font-size:8px">RAG<br>paper</div>
-      <div class="node node-unvisited" style="font-size:8px">Lilian<br>Weng</div>
+      <div class="node node-unvisited" style="font-size:8px">Noise<br>detection</div>
       <span class="skip">✗</span>
-      <div class="node node-unvisited" style="font-size:8px">Pinecone<br>guide</div>
-      <span class="edge">←</span>
-      <div class="node node-visited" style="font-size:8px">RAGAS<br>docs ✓</div>
-      <span class="edge">←</span>
-      <div class="node node-unvisited" style="font-size:8px;opacity:0.5">RAGAS<br>intro</div>
+      <div class="node node-unvisited" style="font-size:8px">Cost &amp;<br>latency</div>
       <span class="skip">✗</span>
-      <div class="node node-unvisited" style="font-size:8px">RAGAS<br>setup</div>
-      <span style="color:#B99EE0;font-size:10px;margin-left:8px">RAGAS evaluation docs — closest neighbourhood · 8 sub-clusters skipped</span>
+      <div class="node node-visited" style="font-size:8px">Core<br>metrics ✓</div>
+      <span class="edge">←</span>
+      <div class="node node-visited" style="font-size:8px">Scoring<br>methods ✓</div>
+      <span class="skip">✗</span>
+      <div class="node node-unvisited" style="font-size:8px">Baseline<br>compare</div>
+      <span style="color:#B99EE0;font-size:10px;margin-left:8px">"Core metrics" neighbourhood — 3 sub-clusters skipped</span>
     </div>
   </div>
 
-  <div class="drop">↓ &nbsp;RAGAS docs neighbourhood found — drop to Layer 0 for exact match</div>
+  <div class="drop">↓ &nbsp;"Core metrics" neighbourhood found — drop to Layer 0 for exact scoring</div>
 
   <!-- LAYER 0 -->
   <div class="layer l0">
-    <div class="layer-label">LAYER 0 — All 312 chunks &nbsp;·&nbsp; short hops within neighbourhood &nbsp;·&nbsp; exact similarity scored</div>
+    <div class="layer-label">LAYER 0 — All 45 filtered chunks &nbsp;·&nbsp; short hops in neighbourhood &nbsp;·&nbsp; cosine similarity scored</div>
     <div class="nodes" style="flex-wrap:wrap;gap:6px">
       <div class="node node-unvisited" style="width:20px;height:20px;font-size:7px;opacity:0.3"></div>
       <div class="node node-unvisited" style="width:20px;height:20px;font-size:7px;opacity:0.3"></div>
       <div class="node node-unvisited" style="width:20px;height:20px;font-size:7px;opacity:0.3"></div>
-      <div class="node node-unvisited" style="width:20px;height:20px;font-size:7px;opacity:0.3"></div>
-      <div class="node node-unvisited" style="width:20px;height:20px;font-size:7px;opacity:0.3"></div>
       <span class="zone-label">search zone →</span>
-      <div class="node node-result" style="font-size:7px;padding:2px" title="Score 0.91">🥇<br><span style="font-size:6px">Faithfulness<br>0.91</span></div>
-      <div class="node node-result" style="font-size:7px;padding:2px" title="Score 0.88">🥈<br><span style="font-size:6px">Answer<br>Relevancy 0.88</span></div>
-      <div class="node node-result" style="font-size:7px;padding:2px" title="Score 0.85">🥉<br><span style="font-size:6px">Context<br>Precision 0.85</span></div>
+      <div class="node node-result" style="font-size:7px;padding:2px">🥇<br><span style="font-size:6px">Faithfulness<br>0.91</span></div>
+      <div class="node node-result" style="font-size:7px;padding:2px">🥈<br><span style="font-size:6px">Ans. Relevancy<br>0.88</span></div>
+      <div class="node node-result" style="font-size:7px;padding:2px">🥉<br><span style="font-size:6px">Ctx. Precision<br>0.85</span></div>
       <div class="node node-visited" style="font-size:7px;padding:2px">4th<br><span style="font-size:6px">0.79</span></div>
       <div class="node node-visited" style="font-size:7px;padding:2px">5th<br><span style="font-size:6px">0.74</span></div>
       <span class="zone-label">← top-5 scored</span>
       <div class="node node-unvisited" style="width:20px;height:20px;font-size:7px;opacity:0.3"></div>
       <div class="node node-unvisited" style="width:20px;height:20px;font-size:7px;opacity:0.3"></div>
       <div class="node node-unvisited" style="width:20px;height:20px;font-size:7px;opacity:0.3"></div>
-      <div class="node node-unvisited" style="width:20px;height:20px;font-size:7px;opacity:0.3"></div>
-      <div class="node node-unvisited" style="width:20px;height:20px;font-size:7px;opacity:0.3"></div>
     </div>
     <div class="sub" style="margin-top:8px;color:#72CF90">
-      Top results: "Faithfulness measures..." · "Answer Relevancy is..." · "Context Precision scores..." (all from RAGAS docs)
+      Top-3: "Faithfulness measures claim-level grounding..." · "Answer Relevancy scores query alignment..." · "Context Precision ranks retrieved chunks..."
     </div>
-    <div class="sub" style="margin-top:4px">Faded nodes = never compared. Only ~27 chunks in the search zone were evaluated.</div>
+    <div class="sub" style="margin-top:4px">Faded nodes = never compared. Only ~12 of 45 filtered chunks evaluated by HNSW.</div>
   </div>
 
   <div class="stat-bar">
-    312 chunks total &nbsp;·&nbsp; ~27 compared &nbsp;·&nbsp; 285 never touched &nbsp;·&nbsp; &lt;5ms &nbsp;·&nbsp; top-3 all from RAGAS docs ✓
+    312 → 45 chunks (metadata filter) &nbsp;·&nbsp; 45 → ~12 compared (HNSW) &nbsp;·&nbsp; 300 chunks never touched &nbsp;·&nbsp; &lt;5ms total
   </div>
 
 </body>
@@ -219,11 +234,11 @@ Neither replaces the other.
     st.markdown(
         "<div style='font-size:12px;color:var(--color-text-secondary);margin-bottom:10px'>"
         "Using our real query: <em>\"What metrics should I use to evaluate RAG?\"</em> — "
-        "watch how HNSW finds the right chunks without comparing all 312."
+        "the metadata filter runs first, then HNSW searches only the filtered subset."
         "</div>",
         unsafe_allow_html=True,
     )
-    components.html(HNSW_HTML, height=520, scrolling=False)
+    components.html(HNSW_HTML, height=600, scrolling=False)
 
     st.markdown("---")
 
