@@ -359,7 +359,7 @@ Neither replaces the other.
             "Will keyword search alongside vector search improve answer accuracy for your specific user queries?",
             "Decide hybrid search scope in V1 planning — retrofitting keyword index later duplicates engineering effort.",
             "Elasticsearch added vector search on top of existing keyword index — teams that had not planned for hybrid from day one had to re-architect their entire retrieval layer.",
-            "Vector search (HNSW) only by default. TF-IDF exists as a fallback if embeddings are unavailable — not combined with vector scores as true hybrid ranking.",
+            "This step builds the HNSW dense index. Hybrid search (HNSW + TF-IDF/BM25 combined via RRF) is implemented at query time in Step 9 — both indexes are built here, hybrid ranking happens at retrieval.",
             "Hybrid search evaluated against top query types in discovery — if keyword match improves accuracy on 20% or more of queries, it is a V1 requirement not V2.",
         ),
     ]
