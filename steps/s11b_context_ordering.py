@@ -199,8 +199,10 @@ def render():
         )
 
         # Show ordered chunks with attention
+        # Last position always gets the end-of-context attention (88%), regardless of total count
         for i, item in enumerate(ordered):
-            attn = ATTENTION_BY_POSITION[i] if i < len(ATTENTION_BY_POSITION) else ATTENTION_BY_POSITION[-1]
+            is_last = i == len(ordered) - 1
+            attn = ATTENTION_BY_POSITION[-1] if is_last else (ATTENTION_BY_POSITION[i] if i < len(ATTENTION_BY_POSITION) else ATTENTION_BY_POSITION[-2])
             color = "#1D9E75" if attn >= 0.7 else "#BA7517" if attn >= 0.5 else "#E24B4A"
             is_best = item == sorted_kept[0]
             is_second = len(sorted_kept) > 1 and item == sorted_kept[1]
