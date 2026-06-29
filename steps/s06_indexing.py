@@ -17,7 +17,7 @@ HNSW_HTML = """
 <html>
 <head>
 <style>
-  body { margin: 0; padding: 12px; background: #1a1a2e; font-family: -apple-system, sans-serif; }
+  body { margin: 0; padding: 12px; background: #1a1a2e; font-family: -apple-system, sans-serif; color: #e0e0e0; }
   .layer {
     border-radius: 8px; padding: 12px 16px; margin-bottom: 6px;
   }
@@ -33,6 +33,7 @@ HNSW_HTML = """
   .node-unvisited { border: 2px solid; opacity: 0.45; background: transparent; }
   .node-visited   { background: #F4845F; border: 2px solid #C0392B; color: white; }
   .node-entry     { background: #F4845F; border: 2px solid #C0392B; color: white; }
+  .node-result    { background: #1D9E75; border: 2px solid #0F6E56; color: white; width:44px; height:44px; border-radius:8px; flex-direction:column; text-align:center; }
   .edge { color: #F4845F; font-size: 20px; font-weight: 300; margin: 0 2px; }
   .skip { color: #555; font-size: 18px; margin: 0 2px; }
   .drop { text-align: left; padding: 2px 0 2px 26px; font-size: 12px; color: #F4845F; }
@@ -65,74 +66,85 @@ HNSW_HTML = """
 </head>
 <body>
 
+  <!-- Query -->
+  <div style="background:#2a2a40;border:1px solid #F4845F;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12px;">
+    <span style="color:#F4845F;font-weight:700">Query:</span>
+    <span style="color:#fff;margin-left:8px">"What metrics should I use to evaluate RAG?"</span>
+    <span style="color:#888;font-size:10px;margin-left:12px">→ embedded to 384-dim vector · now searching 312 chunks</span>
+  </div>
+
   <!-- LAYER 2 -->
   <div class="layer l2">
-    <div class="layer-label">LAYER 2 — Express highway &nbsp;·&nbsp; 5 nodes &nbsp;·&nbsp; long jumps &nbsp;·&nbsp; find the right region fast</div>
-    <div class="nodes">
-      <div class="node node-entry">IN</div>
-      <span class="edge">→→→</span>
-      <div class="node node-unvisited"></div>
-      <span class="skip">—</span>
-      <div class="node node-unvisited"></div>
-      <span class="skip">—</span>
-      <div class="node node-visited">✓</div>
-      <span class="skip" style="opacity:0.3">—</span>
-      <div class="node node-unvisited"></div>
-      <span style="color:#888;font-size:11px;margin-left:8px">3 nodes skipped</span>
+    <div class="layer-label">LAYER 2 — Coarse map &nbsp;·&nbsp; 5 cluster centres &nbsp;·&nbsp; long jumps &nbsp;·&nbsp; which topic region?</div>
+    <div class="nodes" style="flex-wrap:wrap;gap:8px 4px">
+      <div class="node node-entry" title="Entry point">IN</div>
+      <span class="edge">→</span>
+      <div class="node node-unvisited" title="Chunking cluster">📄<div class="sub">Chunking</div></div>
+      <span class="skip">✗</span>
+      <div class="node node-unvisited" title="Embedding cluster">🧠<div class="sub">Embedding</div></div>
+      <span class="skip">✗</span>
+      <div class="node node-visited" title="Evaluation cluster — closest to query vector">📊<div class="sub">Evaluation ✓</div></div>
+      <span class="skip" style="opacity:0.3">✗</span>
+      <div class="node node-unvisited" title="Retrieval cluster">🔍<div class="sub">Retrieval</div></div>
+      <span class="skip" style="opacity:0.3">✗</span>
+      <div class="node node-unvisited" title="Indexing cluster">🗂️<div class="sub">Indexing</div></div>
+      <span style="color:#72CF90;font-size:10px;margin-left:8px">Evaluation region identified — 3 clusters skipped</span>
     </div>
   </div>
 
-  <div class="drop">↓ &nbsp;nearest region found — drop to Layer 1</div>
+  <div class="drop">↓ &nbsp;Evaluation region found — drop to Layer 1 for finer search</div>
 
   <!-- LAYER 1 -->
   <div class="layer l1">
-    <div class="layer-label">LAYER 1 — District roads &nbsp;·&nbsp; 10 nodes &nbsp;·&nbsp; medium jumps &nbsp;·&nbsp; narrow the neighbourhood</div>
-    <div class="nodes">
-      <div class="node node-unvisited"></div>
-      <div class="node node-unvisited"></div>
-      <div class="node node-unvisited"></div>
-      <span class="skip">—</span>
-      <div class="node node-unvisited"></div>
+    <div class="layer-label">LAYER 1 — Neighbourhood map &nbsp;·&nbsp; 12 sub-clusters &nbsp;·&nbsp; medium jumps &nbsp;·&nbsp; which document?</div>
+    <div class="nodes" style="flex-wrap:wrap;gap:8px 4px">
+      <div class="node node-unvisited" style="font-size:8px">LangChain<br>docs</div>
+      <div class="node node-unvisited" style="font-size:8px">RAG<br>paper</div>
+      <div class="node node-unvisited" style="font-size:8px">Lilian<br>Weng</div>
+      <span class="skip">✗</span>
+      <div class="node node-unvisited" style="font-size:8px">Pinecone<br>guide</div>
       <span class="edge">←</span>
-      <div class="node node-visited">✓</div>
+      <div class="node node-visited" style="font-size:8px">RAGAS<br>docs ✓</div>
       <span class="edge">←</span>
-      <div class="node node-unvisited" style="opacity:0.6"></div>
-      <span class="skip">—</span>
-      <div class="node node-unvisited"></div>
-      <div class="node node-unvisited"></div>
-      <div class="node node-unvisited"></div>
-      <span style="color:#888;font-size:11px;margin-left:8px">7 nodes skipped</span>
+      <div class="node node-unvisited" style="font-size:8px;opacity:0.5">RAGAS<br>intro</div>
+      <span class="skip">✗</span>
+      <div class="node node-unvisited" style="font-size:8px">RAGAS<br>setup</div>
+      <span style="color:#B99EE0;font-size:10px;margin-left:8px">RAGAS evaluation docs — closest neighbourhood · 8 sub-clusters skipped</span>
     </div>
   </div>
 
-  <div class="drop">↓ &nbsp;nearest neighbourhood found — drop to Layer 0</div>
+  <div class="drop">↓ &nbsp;RAGAS docs neighbourhood found — drop to Layer 0 for exact match</div>
 
   <!-- LAYER 0 -->
   <div class="layer l0">
-    <div class="layer-label">LAYER 0 — Street level &nbsp;·&nbsp; all 312 chunks &nbsp;·&nbsp; exact precision search</div>
-    <div class="nodes">
-      <div class="node node-unvisited" style="width:22px;height:22px;font-size:8px"></div>
-      <div class="node node-unvisited" style="width:22px;height:22px;font-size:8px"></div>
-      <div class="node node-unvisited" style="width:22px;height:22px;font-size:8px"></div>
-      <div class="node node-unvisited" style="width:22px;height:22px;font-size:8px"></div>
-      <div class="node node-unvisited" style="width:22px;height:22px;font-size:8px"></div>
-      <div class="node node-unvisited" style="width:22px;height:22px;font-size:8px"></div>
-      <span class="zone-label">search zone ↓</span>
-      <div class="node node-visited" style="font-size:9px">1st</div>
-      <div class="node node-visited" style="font-size:9px">2nd</div>
-      <div class="node node-visited" style="font-size:9px">3rd</div>
-      <span class="zone-label">↑ top-3 found</span>
-      <div class="node node-unvisited" style="width:22px;height:22px;font-size:8px"></div>
-      <div class="node node-unvisited" style="width:22px;height:22px;font-size:8px"></div>
-      <div class="node node-unvisited" style="width:22px;height:22px;font-size:8px"></div>
-      <div class="node node-unvisited" style="width:22px;height:22px;font-size:8px"></div>
-      <div class="node node-unvisited" style="width:22px;height:22px;font-size:8px"></div>
+    <div class="layer-label">LAYER 0 — All 312 chunks &nbsp;·&nbsp; short hops within neighbourhood &nbsp;·&nbsp; exact similarity scored</div>
+    <div class="nodes" style="flex-wrap:wrap;gap:6px">
+      <div class="node node-unvisited" style="width:20px;height:20px;font-size:7px;opacity:0.3"></div>
+      <div class="node node-unvisited" style="width:20px;height:20px;font-size:7px;opacity:0.3"></div>
+      <div class="node node-unvisited" style="width:20px;height:20px;font-size:7px;opacity:0.3"></div>
+      <div class="node node-unvisited" style="width:20px;height:20px;font-size:7px;opacity:0.3"></div>
+      <div class="node node-unvisited" style="width:20px;height:20px;font-size:7px;opacity:0.3"></div>
+      <span class="zone-label">search zone →</span>
+      <div class="node node-result" style="font-size:7px;padding:2px" title="Score 0.91">🥇<br><span style="font-size:6px">Faithfulness<br>0.91</span></div>
+      <div class="node node-result" style="font-size:7px;padding:2px" title="Score 0.88">🥈<br><span style="font-size:6px">Answer<br>Relevancy 0.88</span></div>
+      <div class="node node-result" style="font-size:7px;padding:2px" title="Score 0.85">🥉<br><span style="font-size:6px">Context<br>Precision 0.85</span></div>
+      <div class="node node-visited" style="font-size:7px;padding:2px">4th<br><span style="font-size:6px">0.79</span></div>
+      <div class="node node-visited" style="font-size:7px;padding:2px">5th<br><span style="font-size:6px">0.74</span></div>
+      <span class="zone-label">← top-5 scored</span>
+      <div class="node node-unvisited" style="width:20px;height:20px;font-size:7px;opacity:0.3"></div>
+      <div class="node node-unvisited" style="width:20px;height:20px;font-size:7px;opacity:0.3"></div>
+      <div class="node node-unvisited" style="width:20px;height:20px;font-size:7px;opacity:0.3"></div>
+      <div class="node node-unvisited" style="width:20px;height:20px;font-size:7px;opacity:0.3"></div>
+      <div class="node node-unvisited" style="width:20px;height:20px;font-size:7px;opacity:0.3"></div>
     </div>
-    <div class="sub" style="margin-top:8px">Faded nodes = never compared. Only the search zone was evaluated.</div>
+    <div class="sub" style="margin-top:8px;color:#72CF90">
+      Top results: "Faithfulness measures..." · "Answer Relevancy is..." · "Context Precision scores..." (all from RAGAS docs)
+    </div>
+    <div class="sub" style="margin-top:4px">Faded nodes = never compared. Only ~27 chunks in the search zone were evaluated.</div>
   </div>
 
   <div class="stat-bar">
-    312 chunks total &nbsp;·&nbsp; ~27 compared &nbsp;·&nbsp; 285 skipped &nbsp;·&nbsp; &lt;5ms query latency
+    312 chunks total &nbsp;·&nbsp; ~27 compared &nbsp;·&nbsp; 285 never touched &nbsp;·&nbsp; &lt;5ms &nbsp;·&nbsp; top-3 all from RAGAS docs ✓
   </div>
 
 </body>
@@ -206,12 +218,12 @@ Neither replaces the other.
     st.markdown("**How HNSW navigates — query to answer in 3 layers:**")
     st.markdown(
         "<div style='font-size:12px;color:var(--color-text-secondary);margin-bottom:10px'>"
-        "Think of it like finding an address in a city. You don't check every street. "
-        "You fly in to the right region → drive to the neighbourhood → walk to the door."
+        "Using our real query: <em>\"What metrics should I use to evaluate RAG?\"</em> — "
+        "watch how HNSW finds the right chunks without comparing all 312."
         "</div>",
         unsafe_allow_html=True,
     )
-    components.html(HNSW_HTML, height=370, scrolling=False)
+    components.html(HNSW_HTML, height=520, scrolling=False)
 
     st.markdown("---")
 
