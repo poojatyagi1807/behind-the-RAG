@@ -725,3 +725,4 @@ def render():
             "HyDE requires one LLM call to generate a hypothetical answer that gets embedded for retrieval. "
             "Add your API key (Gemini / Claude / OpenAI) in the **sidebar**, then re-submit your query."
         )
+        render_nav(next_label="Next: Query Embedding →", pipeline="online", show_jump=True, next_disabled=True)

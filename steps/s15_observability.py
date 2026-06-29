@@ -1,7 +1,7 @@
 """Step 15 — Observability and drift detection."""
 import streamlit as st
 from datetime import datetime
-from ui import render_topbar, render_step_header, render_thinking_card, render_enterprise_note, render_risk_table, render_pm_matrix
+from ui import render_topbar, render_step_header, render_thinking_card, render_enterprise_note, render_risk_table, render_pm_matrix, render_nav
 from state import get_result, reset_session, go_to
 
 RISKS = [
@@ -443,6 +443,7 @@ The loop closes when a thumbs down in week 1 measurably improves retrieval in we
         ),
     ]
     render_pm_matrix("Observability", rows_data)
+    render_nav(next_label="You're done! 🎉", next_disabled=True, pipeline="online", show_jump=True)
 
     # ── End screen ────────────────────────────────────────────────────────────
     st.markdown("---")
