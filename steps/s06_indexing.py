@@ -282,17 +282,18 @@ Neither replaces the other.
         ),
         (
             "2 · Build the HNSW index",
-            "Those 312 vectors are organized into the layered HNSW structure shown above — "
-            "the express highway, district roads, and street-level layers. This is a one-time "
-            "build step. No external database, no server, no compilation — it runs entirely "
-            "in memory inside this session.",
+            "Those 312 vectors are organized into the 3-layer HNSW structure shown above — "
+            "coarse topic clusters at the top, sub-topic neighbourhoods in the middle, "
+            "and all individual chunks at street level. This is a one-time build step. "
+            "No external database, no server, no compilation — it runs entirely in memory inside this session.",
             "#9B59B6",
         ),
         (
             "3 · At query time",
-            "Your question is converted into a vector using the exact same model. The index is "
-            "navigated top-down — fly to the right region, narrow to the neighborhood, walk to "
-            "the door — comparing only ~27 of the 312 chunks instead of all of them. "
+            "The metadata filter runs first — narrowing 312 chunks down to only the relevant subset "
+            "(e.g. 45 RAGAS evaluation chunks). HNSW then navigates that filtered set top-down: "
+            "identify the right topic cluster, narrow to the closest sub-topic, score the final "
+            "candidates — comparing only ~12 chunks instead of all 45. "
             "The closest matches by cosine similarity come back in under 5 milliseconds.",
             "#E67E22",
         ),
