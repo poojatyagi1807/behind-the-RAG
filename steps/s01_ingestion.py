@@ -311,11 +311,11 @@ padding:10px 14px;margin-bottom:8px;font-size:12px;font-weight:600;color:#085041
 ✅ Enterprise parser (AWS Textract / Azure Document Intelligence)
 </div>
 """, unsafe_allow_html=True)
-        st.markdown("<div style='font-size:11px;font-weight:600;color:#333;margin-bottom:2px'>📝 Prose — clean, citations stripped</div>", unsafe_allow_html=True)
+        st.markdown("<div style='font-size:11px;font-weight:700;color:#ffffff;margin-bottom:2px'>📝 Prose — clean, citations stripped</div>", unsafe_allow_html=True)
         st.code(ENTERPRISE_PROSE, language=None)
-        st.markdown("<div style='font-size:11px;font-weight:600;color:#333;margin-bottom:2px'>📊 Table — preserved as structured JSON</div>", unsafe_allow_html=True)
+        st.markdown("<div style='font-size:11px;font-weight:700;color:#ffffff;margin-bottom:2px'>📊 Table — preserved as structured JSON</div>", unsafe_allow_html=True)
         st.code(ENTERPRISE_TABLE, language="json")
-        st.markdown("<div style='font-size:11px;font-weight:600;color:#333;margin-bottom:2px'>🖼️ Image — described, not discarded</div>", unsafe_allow_html=True)
+        st.markdown("<div style='font-size:11px;font-weight:700;color:#ffffff;margin-bottom:2px'>🖼️ Image — described, not discarded</div>", unsafe_allow_html=True)
         st.code(ENTERPRISE_IMAGE, language=None)
         st.caption("Three separate typed chunks. Table is queryable as data. Image is embedded via vision-generated description.")
 
