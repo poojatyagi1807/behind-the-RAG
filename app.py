@@ -160,22 +160,52 @@ with st.sidebar:
         from state import reset_session
         reset_session()
 
-    if st.session_state.active_pipeline == "offline":
-        if st.button("🔍 Jump to online pipeline", use_container_width=True):
-            st.session_state.active_pipeline = "online"
-            st.session_state.step = "s07_query_understanding"
-            st.rerun()
-
-    if st.session_state.active_pipeline == "online":
-        if st.button("📦 Back to offline pipeline", use_container_width=True):
-            st.session_state.active_pipeline = "offline"
-            st.session_state.step = "s01_ingestion"
-            st.rerun()
-
-    st.markdown("---")
     if st.button("📖 Glossary", use_container_width=True):
         st.session_state.step = "glossary"
         st.rerun()
+
+    # ── Step jump menu ────────────────────────────────────────────────────────
+    current_step = st.session_state.get("step", "landing")
+
+    OFFLINE_NAV = [
+        ("s01_ingestion",           "1 · Document Ingestion"),
+        ("s03_chunking",            "2 · Chunking"),
+        ("s05_metadata",            "3 · Metadata Tagging"),
+        ("s04_embedding",           "4 · Embedding"),
+        ("s06_indexing",            "5 · Indexing (HNSW)"),
+        ("s06_summary",             "6 · Pipeline Summary"),
+    ]
+
+    ONLINE_NAV = [
+        ("s07_query_understanding", "7 · Query Understanding"),
+        ("s08_query_embedding",     "8 · Query Embedding"),
+        ("s09_vector_search",       "9 · Vector Search"),
+        ("s10_reranking",           "10 · Re-ranking"),
+        ("s11b_context_ordering",   "11 · Context Ordering"),
+        ("s11a_context_assembly",   "11b · Context Assembly"),
+        ("s12_generation",          "12 · Generation"),
+        ("s13_grounding",           "13 · Grounding"),
+        ("s14_judge",               "14 · RAGAS Evaluation"),
+        ("s15_observability",       "15 · Observability"),
+    ]
+
+    st.markdown("**📦 Offline Pipeline**")
+    for step_id, label in OFFLINE_NAV:
+        is_current = current_step == step_id
+        btn_label = f"**→ {label}**" if is_current else label
+        if st.button(btn_label, key=f"nav_{step_id}", use_container_width=True):
+            st.session_state.step = step_id
+            st.session_state.active_pipeline = "offline"
+            st.rerun()
+
+    st.markdown("**🔍 Online Pipeline**")
+    for step_id, label in ONLINE_NAV:
+        is_current = current_step == step_id
+        btn_label = f"**→ {label}**" if is_current else label
+        if st.button(btn_label, key=f"nav_{step_id}", use_container_width=True):
+            st.session_state.step = step_id
+            st.session_state.active_pipeline = "online"
+            st.rerun()
 
     st.markdown("---")
     st.markdown("**About**")
