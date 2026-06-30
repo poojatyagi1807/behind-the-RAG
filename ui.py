@@ -177,7 +177,7 @@ def render_risk_table(risks: list):
         st.markdown(rows)
 
 
-_PM_COLS_3 = ["PM Decision", "The question to ask", "In this app"]
+_PM_COLS_3 = ["PM Decision", "What to do", "What enterprise PMs do"]
 
 def render_pm_matrix(title: str, rows: list):
     """Render a 3-column PM Decision Matrix — desktop table, mobile card view."""
@@ -186,10 +186,10 @@ def render_pm_matrix(title: str, rows: list):
         tbody = ""
         for i, row in enumerate(rows):
             bg = "var(--color-background-secondary)" if i % 2 == 0 else "var(--color-background-primary)"
-            # row[0]=PM Decision, row[1]=Ask Yourself → "The question to ask", row[4]=Behind The RAG → "In this app"
+            # row[0]=PM Decision, row[2]=Action Item → "What to do", row[5]=Enterprise Standard → "What enterprise PMs do"
             c0 = f'<td data-label="{_PM_COLS_3[0]}"><strong>{row[0]}</strong></td>'
-            c1 = f'<td data-label="{_PM_COLS_3[1]}">{row[1]}</td>'
-            c2 = f'<td data-label="{_PM_COLS_3[2]}">{row[4]}</td>'
+            c1 = f'<td data-label="{_PM_COLS_3[1]}">{row[2]}</td>'
+            c2 = f'<td data-label="{_PM_COLS_3[2]}">{row[5]}</td>'
             tbody += f'<tr style="background:{bg}">{c0}{c1}{c2}</tr>'
         st.markdown(
             f'<table class="pm-table"><thead><tr>{thead}</tr></thead>'
