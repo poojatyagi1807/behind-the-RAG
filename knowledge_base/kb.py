@@ -213,6 +213,8 @@ def _chunk_hierarchical(text: str) -> List[Dict]:
 # ── TF-IDF engine ─────────────────────────────────────────────────────────────
 
 def _tokenize(text: str) -> List[str]:
+    if not text:
+        return []
     return re.findall(r'\b[a-z]{2,}\b', text.lower())
 
 

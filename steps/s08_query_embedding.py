@@ -27,8 +27,8 @@ def render():
         pipeline="online"
     )
 
-    raw_query    = st.session_state.get("query", "How does RAG prevent hallucination?")
-    search_query = st.session_state.get("retrieval_query", raw_query)
+    raw_query    = st.session_state.get("query") or "How does RAG prevent hallucination?"
+    search_query = st.session_state.get("retrieval_query") or raw_query
 
     # Show HyDE badge when the retrieval query differs from the raw question
     qu = get_result("query_understanding") or {}
