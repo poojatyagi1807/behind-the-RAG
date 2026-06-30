@@ -103,10 +103,9 @@ def render():
         "Convert meaning into math. Same model in, same model out — always.")
 
     render_thinking_card(
-        "Embedding converts each chunk into a list of numbers — a vector — that represents "
-        "its meaning in mathematical space. Two chunks that mean the same thing but use "
-        "different words will have vectors that are close together. This is what makes "
-        "semantic search possible.",
+        "Embedding turns text into numbers that capture meaning, not just words. "
+        "'Cars' and 'automobiles' become similar numbers. 'Cars' and 'pasta' become very different numbers. "
+        "This is how the system finds relevant chunks even when the exact words don't match.",
         pipeline="offline"
     )
 

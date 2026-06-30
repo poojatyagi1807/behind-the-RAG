@@ -112,9 +112,9 @@ def render():
     render_step_header("⚡", "Generation", "Everything assembled. Now the LLM answers.")
 
     render_thinking_card(
-        "This is the step everyone thinks of when they think of AI. But by the time generation runs, "
-        "11 steps of careful preparation have already happened. The LLM is not doing magic — it is "
-        "reasoning over a carefully constructed context window.",
+        "This is the step most people think of when they think of AI — the LLM generating an answer. "
+        "But everything before this (11 steps) exists to give the LLM the right information to reason over. "
+        "Without good retrieval, even the best LLM gives bad answers.",
         pipeline="online"
     )
 

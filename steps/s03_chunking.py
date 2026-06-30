@@ -64,9 +64,9 @@ def render():
         "The most important decision in the offline pipeline. Where you cut changes everything that follows.")
 
     render_thinking_card(
-        "Cut too small — each chunk loses context. Cut too large — each chunk contains too much. "
-        "There is no universally correct chunk size. The right strategy depends on your document "
-        "structure, embedding model, and the types of questions your users ask.",
+        "Chunking decides what unit of text gets searched and retrieved. "
+        "Too small: chunks lose meaning. Too large: one chunk covers too many topics and dilutes search. "
+        "The right size depends on your documents and what users ask.",
         pipeline="offline"
     )
 

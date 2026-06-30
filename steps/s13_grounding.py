@@ -70,11 +70,9 @@ def render():
         "Did the LLM stay within what was retrieved? Fast, free, runs on every response.")
 
     render_thinking_card(
-        "Grounding is rule-based faithfulness — the fast, free version of what RAGAS measures with an LLM. "
-        "Both ask the same question: did the LLM stay within what was retrieved, or did it invent facts? "
-        "Here we check every sentence using word overlap (no API call needed). "
-        "In the next step, an LLM judge scores faithfulness more accurately using semantic understanding. "
-        "Enterprise RAG runs both: rule-based as a real-time gate on every response, LLM-based for sampled deep evaluation.",
+        "Did the LLM answer from the retrieved chunks, or did it make something up? "
+        "This step checks every sentence in the answer against the chunks — no API call needed. "
+        "A low grounding score means the LLM went beyond what was provided.",
         pipeline="online"
     )
 

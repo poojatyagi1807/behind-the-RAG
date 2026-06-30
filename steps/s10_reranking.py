@@ -26,9 +26,8 @@ def render():
         "Vector search found candidates. Re-ranking finds the right order.")
 
     render_thinking_card(
-        "Vector search is fast but approximate — it never reads query and chunk together. "
-        "Re-ranking is slow but precise — it reads them as a pair and scores contextual relevance. "
-        "Two stages, two different jobs.",
+        "Vector search picks the top 10 candidates quickly. Re-ranking re-reads each candidate alongside your query to score true relevance. "
+        "It's slower but catches cases where a chunk sounded similar but isn't actually about what you asked.",
         pipeline="online"
     )
 

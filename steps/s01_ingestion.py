@@ -216,11 +216,9 @@ def render():
         "Documents arrive in any format. Before a single chunk is created, they're classified, routed, parsed, and cleaned.")
 
     render_thinking_card(
-        "Enterprise knowledge doesn't live in one clean text file. It lives across PDFs, wikis, "
-        "Slack threads, spreadsheets, and source code — all arriving at the same pipeline. "
-        "Each format needs a specialist parser. Each parsed block needs quality checks. "
-        "The goal isn't to strip content — it's to preserve structure so the downstream "
-        "chunker, embedder, and retriever can work with clean, typed, meaningful text.",
+        "Documents come in every format — PDF, wiki, spreadsheet, code. "
+        "Each format needs a different parser to extract the text cleanly. "
+        "Poor parsing here means poor answers at every step downstream.",
         pipeline="offline"
     )
 

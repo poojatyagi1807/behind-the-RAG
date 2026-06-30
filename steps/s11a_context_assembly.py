@@ -27,10 +27,9 @@ def render():
         "Ordering is done. Now pack system prompt + ordered chunks + query into one structured prompt.")
 
     render_thinking_card(
-        "This is the last step before the LLM sees anything. The system prompt sets the rules, "
-        "the chunks provide the knowledge, the query is the question. "
-        "Get the token budget wrong and chunks get truncated silently. "
-        "Get the attribution wrong and the LLM can't cite its sources.",
+        "Everything retrieved so far gets assembled into one text block — the context window — that the LLM reads. "
+        "The system prompt sets the rules (answer only from these sources). "
+        "Chunks provide the knowledge. Your query is the question.",
         pipeline="online"
     )
 

@@ -147,11 +147,9 @@ def render():
         "A second LLM scores the full pipeline across 5 RAGAS dimensions — deeper than rule-based grounding.")
 
     render_thinking_card(
-        "The previous step ran rule-based grounding on every single response — fast, free, no API call. "
-        "This step goes deeper using a second LLM as the evaluator (RAGAS framework). "
-        "Because it costs an API call, enterprises only run this on 5–10% of queries, sampled across intent types. "
-        "Think of it as: Step 13 is your real-time quality gate on every response. "
-        "Step 14 is your weekly audit that catches what the rule-based check missed.",
+        "RAGAS uses an LLM to evaluate your RAG system — scoring faithfulness, relevance, and context quality. "
+        "It's more accurate than the rule-based check in Step 13, but costs an API call so enterprises run it on ~5-10% of queries. "
+        "Step 13 is your real-time gate. Step 14 is your weekly audit.",
         pipeline="online"
     )
 

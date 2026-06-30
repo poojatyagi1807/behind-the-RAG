@@ -17,9 +17,8 @@ def render():
         "Every decision logged. Patterns across thousands of queries tell the story no single run could.")
 
     render_thinking_card(
-        "A single pipeline run tells you what happened once. Observability tells you what is happening "
-        "always — trends, degradation, drift, anomalies. Without it you are flying blind. "
-        "With it you catch problems before users feel them.",
+        "One query tells you nothing. Thousands of queries tell you if quality is drifting, which steps are slow, and which questions aren't being answered well. "
+        "Observability is how you find out your RAG is getting worse — before your users notice.",
         pipeline="online"
     )
 

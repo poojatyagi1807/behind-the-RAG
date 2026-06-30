@@ -52,11 +52,9 @@ def render():
         "Vectors tell you what chunks are similar. Metadata tells you which ones are actually relevant.")
 
     render_thinking_card(
-        "Metadata tagging happens right after chunking — before embedding. "
-        "We describe each chunk fully (source, type, permissions, timestamps) while we still have "
-        "the raw text. Some pipelines even prepend metadata to the chunk before embedding, "
-        "so the vector encodes structural context, not just prose. "
-        "Without metadata, retrieval is blind to who can see what, when it was written, and whether it's still current.",
+        "Metadata is extra information attached to each chunk — where it came from, what type it is, who can see it. "
+        "A user asking for 'recent policy updates' can't be helped by a great vector search if there's no date field to filter on. "
+        "Metadata is what turns retrieval from 'find similar text' to 'find the right text'.",
         pipeline="offline"
     )
 

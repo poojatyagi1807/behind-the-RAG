@@ -342,9 +342,9 @@ def render():
         "Before searching anything — understand what was actually asked.")
 
     render_thinking_card(
-        "When someone types 'how does RAG stop making things up' — they don't mean those exact words. "
-        "They mean: what mechanism prevents hallucination? A system that matches exact words will fail. "
-        "A system that understands intent will find the right answer.",
+        "What you type and what you mean are different things. "
+        "'How does RAG stop making things up' means 'what prevents hallucination'. "
+        "This step rewrites your query into the form most likely to find the right answer.",
         pipeline="online"
     )
 

@@ -170,9 +170,9 @@ def render():
         "Query vector is ready. Find which chunks are closest in meaning.")
 
     render_thinking_card(
-        "Vector search finds chunks whose meaning is closest to your query — not by matching words "
-        "but by measuring distance in vector space. But before a single similarity score is computed, "
-        "two earlier decisions have already shrunk the search space dramatically.",
+        "Vector search finds chunks whose meaning is close to your query — not chunks that share the same words. "
+        "Before searching, metadata filters already cut the pool from 312 to ~45 relevant chunks. "
+        "Then HNSW navigates just those 45 to find the best 5-10.",
         pipeline="online"
     )
 

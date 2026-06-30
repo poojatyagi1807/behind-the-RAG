@@ -173,9 +173,9 @@ def render():
         "Store vectors in a structure that can be searched in milliseconds across millions of chunks.")
 
     render_thinking_card(
-        "Without an index, finding the closest vector means comparing against every single chunk — "
-        "one by one. At 300 chunks that takes milliseconds. At 300 million chunks it takes minutes. "
-        "An index organizes vectors so search skips most comparisons and still finds the right answer.",
+        "Searching without an index means comparing your query to every chunk, one by one. "
+        "At 300 chunks: fine. At 300 million chunks: 10 minutes per query. "
+        "HNSW is the indexing algorithm that makes search fast at any scale — it skips most comparisons and still finds the right answer.",
         pipeline="offline"
     )
 

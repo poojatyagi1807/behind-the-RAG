@@ -159,52 +159,43 @@ color:var(--color-text-secondary);line-height:1.6;font-style:italic">
 
 
 def render_what_we_built(text: str):
-    st.markdown(f"""
-<div style="font-size:12px;color:var(--color-text-secondary);
-background:var(--color-background-secondary);border-radius:8px;
-padding:10px 14px;margin:8px 0;line-height:1.6">
-<strong style="color:var(--color-text-primary)">What we built (simplified)</strong><br>{text}
-</div>
-""", unsafe_allow_html=True)
+    pass  # removed — content covered by step header and thinking card
 
 
 def render_enterprise_note(text: str):
-    st.markdown(f"""
-<div style="background:#EBF4FD;border:0.5px solid #B5D4F4;border-radius:8px;
-padding:12px 14px;margin:12px 0;font-size:12px;color:#0C447C;line-height:1.6">
-🏢 <strong>What enterprises actually do</strong><br><br>{text}
-</div>
-""", unsafe_allow_html=True)
+    with st.expander("🏢 How enterprises do this"):
+        st.markdown(f"<div style='font-size:12px;color:var(--color-text-secondary);line-height:1.7'>{text}</div>", unsafe_allow_html=True)
 
 
 def render_risk_table(risks: list):
-    st.markdown("**⚠️ What can go wrong**")
-    rows = "| Risk | Example | Enterprise mitigation |\n|---|---|---|\n"
-    rows += "\n".join(
-        f"| **{r['risk']}** | {r['example']} | {r['mitigation']} |"
-        for r in risks
-    )
-    st.markdown(rows)
+    with st.expander("⚠️ What can go wrong"):
+        rows = "| Risk | Example | Fix |\n|---|---|---|\n"
+        rows += "\n".join(
+            f"| **{r['risk']}** | {r['example']} | {r['mitigation']} |"
+            for r in risks
+        )
+        st.markdown(rows)
 
 
-_PM_COLS = ["PM Decision", "Ask Yourself", "Action Item",
-            "Real World Example", "Behind The RAG", "Enterprise Standard"]
+_PM_COLS_3 = ["PM Decision", "The question to ask", "In this app"]
 
 def render_pm_matrix(title: str, rows: list):
-    """Render a PM Decision Matrix — desktop table, mobile card view."""
-    st.markdown(f"**PM Decision Matrix — {title}**")
-    thead = "".join(f"<th>{c}</th>" for c in _PM_COLS)
-    tbody = ""
-    for i, row in enumerate(rows):
-        bg = "var(--color-background-secondary)" if i % 2 == 0 else "var(--color-background-primary)"
-        cells = f'<td data-label="{_PM_COLS[0]}"><strong>{row[0]}</strong></td>'
-        cells += "".join(f'<td data-label="{_PM_COLS[j]}">{row[j]}</td>' for j in range(1, 6))
-        tbody += f'<tr style="background:{bg}">{cells}</tr>'
-    st.markdown(
-        f'<table class="pm-table"><thead><tr>{thead}</tr></thead>'
-        f'<tbody>{tbody}</tbody></table>',
-        unsafe_allow_html=True,
-    )
+    """Render a 3-column PM Decision Matrix — desktop table, mobile card view."""
+    with st.expander(f"📋 PM Takeaways — {title}"):
+        thead = "".join(f"<th>{c}</th>" for c in _PM_COLS_3)
+        tbody = ""
+        for i, row in enumerate(rows):
+            bg = "var(--color-background-secondary)" if i % 2 == 0 else "var(--color-background-primary)"
+            # row[0]=PM Decision, row[1]=Ask Yourself → "The question to ask", row[4]=Behind The RAG → "In this app"
+            c0 = f'<td data-label="{_PM_COLS_3[0]}"><strong>{row[0]}</strong></td>'
+            c1 = f'<td data-label="{_PM_COLS_3[1]}">{row[1]}</td>'
+            c2 = f'<td data-label="{_PM_COLS_3[2]}">{row[4]}</td>'
+            tbody += f'<tr style="background:{bg}">{c0}{c1}{c2}</tr>'
+        st.markdown(
+            f'<table class="pm-table"><thead><tr>{thead}</tr></thead>'
+            f'<tbody>{tbody}</tbody></table>',
+            unsafe_allow_html=True,
+        )
 
 
 

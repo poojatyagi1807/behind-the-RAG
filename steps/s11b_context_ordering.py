@@ -50,10 +50,9 @@ def render():
         "Decide which chunks to keep, remove duplicates, then arrange them for maximum LLM attention.")
 
     render_thinking_card(
-        "LLMs do not read context windows uniformly. Research shows they pay most attention to "
-        "content at the start and end of the context window. Content in the middle gets "
-        "systematically underweighted — even when it contains the most relevant information. "
-        "Ordering is how we fight that.",
+        "LLMs pay more attention to content at the start and end of what they read — not the middle. "
+        "So the order you put chunks in actually changes the quality of the answer. "
+        "This step decides which chunks go where.",
         pipeline="online"
     )
 

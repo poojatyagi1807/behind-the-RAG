@@ -88,11 +88,9 @@ def render():
         "Raw text is messy. Before chunking, it needs to be structured and cleaned.")
 
     render_thinking_card(
-        "Enterprise parsing isn't about how much to strip — it's about structure preservation and content routing. "
-        "Each content type (prose, table, image, code) needs a different processor. "
-        "A naive loader flattens everything into one blob. "
-        "A proper parser routes each block to the right specialist, then runs quality and compliance checks "
-        "before anything reaches the chunker.",
+        "A simple text loader turns a PDF into one unreadable blob. "
+        "A proper parser keeps tables as tables, figures as descriptions, and prose as clean sentences. "
+        "That structure is what makes the difference between useful and useless retrieval.",
         pipeline="offline"
     )
 

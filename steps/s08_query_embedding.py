@@ -20,10 +20,9 @@ def render():
         "One rule: the query must be embedded with the exact same model used during indexing.")
 
     render_thinking_card(
-        "Your query gets converted into a vector using all-MiniLM-L6-v2 — the same local model "
-        "used to embed all chunks in the index. Same model = same vector space = meaningful similarity scores. "
-        "The query vector computed here is passed directly to Vector Search for real neural semantic search. "
-        "Different model = retrieval breaks silently.",
+        "Your question gets turned into numbers using the same model that processed the knowledge base. "
+        "Same model = numbers that can be compared. Different model = comparisons are meaningless. "
+        "One rule: query and chunks must always use the same embedding model.",
         pipeline="online"
     )
 
