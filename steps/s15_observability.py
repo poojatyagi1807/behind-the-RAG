@@ -341,9 +341,9 @@ The loop closes when a thumbs down in week 1 measurably improves retrieval in we
     <div style="font-size:11px;font-weight:700;color:#c78fff;margin-bottom:10px;text-align:center;">
       🔁 Closed feedback loop — observability triggers fixes back upstream
     </div>
-    <div style="display:flex;gap:10px;justify-content:space-between;">
+    <div style="display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;">
 
-      <div style="flex:1;background:#1a3a6e;border:1px solid #4285F4;border-radius:8px;padding:10px;text-align:center;">
+      <div style="flex:1;min-width:130px;background:#1a3a6e;border:1px solid #4285F4;border-radius:8px;padding:10px;text-align:center;">
         <div style="font-size:10px;font-weight:700;color:#a8c8ff;margin-bottom:4px;">Embedding drift detected</div>
         <div style="font-size:10px;color:#c0d4f0;margin-bottom:6px;">Provider updates model silently — retrieval scores drop across the board</div>
         <div style="font-size:18px;color:#6aaaf8;">↑</div>
@@ -351,7 +351,7 @@ The loop closes when a thumbs down in week 1 measurably improves retrieval in we
         <div style="font-size:9px;color:#7aa8d8;">→ back to Step 4</div>
       </div>
 
-      <div style="flex:1;background:#0d3d2a;border:1px solid #1D9E75;border-radius:8px;padding:10px;text-align:center;">
+      <div style="flex:1;min-width:130px;background:#0d3d2a;border:1px solid #1D9E75;border-radius:8px;padding:10px;text-align:center;">
         <div style="font-size:10px;font-weight:700;color:#6fcfaa;margin-bottom:4px;">Data drift detected</div>
         <div style="font-size:10px;color:#b0e8d0;margin-bottom:6px;">World changes, KB stays static — faithfulness high but correctness drops</div>
         <div style="font-size:18px;color:#3db882;">↑</div>
@@ -359,7 +359,7 @@ The loop closes when a thumbs down in week 1 measurably improves retrieval in we
         <div style="font-size:9px;color:#4ab890;">→ back to Step 1</div>
       </div>
 
-      <div style="flex:1;background:#3d2000;border:1px solid #BA7517;border-radius:8px;padding:10px;text-align:center;">
+      <div style="flex:1;min-width:130px;background:#3d2000;border:1px solid #BA7517;border-radius:8px;padding:10px;text-align:center;">
         <div style="font-size:10px;font-weight:700;color:#f0b84a;margin-bottom:4px;">Query drift detected</div>
         <div style="font-size:10px;color:#f0d090;margin-bottom:6px;">Users ask new question types — unknown intent cluster grows week on week</div>
         <div style="font-size:18px;color:#d4880a;">↑</div>
@@ -367,11 +367,19 @@ The loop closes when a thumbs down in week 1 measurably improves retrieval in we
         <div style="font-size:9px;color:#d4a040;">→ back to Step 7</div>
       </div>
 
+      <div style="flex:1;min-width:130px;background:#1a0a2e;border:1px solid #9B59B6;border-radius:8px;padding:10px;text-align:center;">
+        <div style="font-size:10px;font-weight:700;color:#c78fff;margin-bottom:4px;">👍 / 👎 User RLHF signal</div>
+        <div style="font-size:10px;color:#d8b8f8;margin-bottom:6px;">Thumbs down logged with chunk IDs — pattern identified after 50+ signals</div>
+        <div style="font-size:18px;color:#9B59B6;">↑</div>
+        <div style="font-size:10px;font-weight:600;color:#c78fff;">Adjust re-ranker weights</div>
+        <div style="font-size:9px;color:#a070d0;">→ back to Step 10</div>
+      </div>
+
     </div>
   </div>
 
 </div>
-""", height=620)
+""", height=680)
 
     render_enterprise_note(
         "LangSmith by LangChain is the most widely deployed RAG observability platform. Datadog's LLM Observability "
