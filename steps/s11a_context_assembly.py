@@ -34,7 +34,7 @@ def render():
         pipeline="online"
     )
 
-    query = st.session_state.get("query", "How does RAG prevent hallucination?")
+    query = st.session_state.get("query") or "How does RAG prevent hallucination?"
 
     # ── Pull ordered chunks from previous step ────────────────────────────────
     ordering_result = get_result("context_ordering")

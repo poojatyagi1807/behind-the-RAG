@@ -102,7 +102,7 @@ border-radius:8px;margin-bottom:6px">
 
     # ── Live Cohere re-ranking (manual — runs only when button clicked) ───────
     if has_cohere_key():
-        query = st.session_state.get("query", "How does RAG prevent hallucination?")
+        query = st.session_state.get("query") or "How does RAG prevent hallucination?"
         vs_result = get_result("vector_search")
         scored_chunks = vs_result.get("scored", []) if vs_result else []
 

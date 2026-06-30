@@ -147,7 +147,7 @@ Switch provider in the sidebar if you'd like to use a different LLM.
         return
 
     # ── Build prompt ──────────────────────────────────────────────────────────
-    query = st.session_state.get("query", "How does RAG prevent hallucination?")
+    query = st.session_state.get("query") or "How does RAG prevent hallucination?"
     assembly = get_result("context_assembly")
     ordering = get_result("context_ordering")
 

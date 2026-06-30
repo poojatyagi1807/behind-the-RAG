@@ -19,6 +19,8 @@ RISKS = [
 # ── Hybrid search implementation ──────────────────────────────────────────────
 
 def _tokenize(text: str):
+    if not text:
+        return []
     return re.findall(r'\b[a-z]{2,}\b', text.lower())
 
 
@@ -175,8 +177,8 @@ def render():
     )
 
     # ── 1. Dynamic: metadata filter + HNSW + search space ─────────────────────
-    raw_query_pre    = st.session_state.get("query", "How does RAG prevent hallucination?")
-    search_query_pre = st.session_state.get("retrieval_query", raw_query_pre) or raw_query_pre
+    raw_query_pre    = st.session_state.get("query") or "How does RAG prevent hallucination?"
+    search_query_pre = st.session_state.get("retrieval_query") or raw_query_pre
     kb_chunks_pre    = st.session_state.get("kb_chunks", [])
     total_pre        = len(kb_chunks_pre) if kb_chunks_pre else 312
 
