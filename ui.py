@@ -177,20 +177,21 @@ def render_risk_table(risks: list):
         st.markdown(rows)
 
 
-_PM_COLS_3 = ["PM Decision", "What a PM must do", "Example: this app"]
+_PM_COLS_2 = ["What we did — and why it's the wrong approach", "What should have been done"]
 
 def render_pm_matrix(title: str, rows: list):
-    """Render a 3-column PM Decision Matrix — desktop table, mobile card view."""
+    """Render a 2-column PM matrix — failure story on left, right approach on right."""
     with st.expander(f"📋 PM Takeaways — {title}"):
-        thead = "".join(f"<th>{c}</th>" for c in _PM_COLS_3)
+        thead = "".join(f"<th>{c}</th>" for c in _PM_COLS_2)
         tbody = ""
         for i, row in enumerate(rows):
             bg = "var(--color-background-secondary)" if i % 2 == 0 else "var(--color-background-primary)"
-            # row[0]=PM Decision, row[2]=Action Item, row[3]=App-specific example
-            c0 = f'<td data-label="{_PM_COLS_3[0]}"><strong>{row[0]}</strong></td>'
-            c1 = f'<td data-label="{_PM_COLS_3[1]}">{row[2]}</td>'
-            c2 = f'<td data-label="{_PM_COLS_3[2]}">{row[3]}</td>'
-            tbody += f'<tr style="background:{bg}">{c0}{c1}{c2}</tr>'
+            # row[0]=PM Decision label, row[3]=app failure example, row[2]=correct action
+            c0 = (f'<td data-label="{_PM_COLS_2[0]}">'
+                  f'<strong style="display:block;margin-bottom:4px">{row[0]}</strong>'
+                  f'{row[3]}</td>')
+            c1 = f'<td data-label="{_PM_COLS_2[1]}">{row[2]}</td>'
+            tbody += f'<tr style="background:{bg}">{c0}{c1}</tr>'
         st.markdown(
             f'<table class="pm-table"><thead><tr>{thead}</tr></thead>'
             f'<tbody>{tbody}</tbody></table>',
